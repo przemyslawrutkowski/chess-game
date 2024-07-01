@@ -1,0 +1,98 @@
+:root {
+    --a-color: #232323;
+    --b-color: #FFFFFF;
+
+    --chess-field-a-color: #769656;
+    --chess-field-b-color: #EEEED2;
+
+    --chess-piece-a-color: #FFFFFF;
+    --chess-piece-b-color: #2C2B29;
+
+    --panel-color: #40916C;
+
+    --primary-font: "Roboto Condensed", sans-serif;
+    --secondary-font: "Roboto", sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+    margin: 0;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body,
+html {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--primary-font);
+    background-color: var(--a-color);
+    color: var(--b-color);
+}
+
+
+main {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 0 1.5rem;
+}
+
+.custom-btn {
+    border: 3px solid var(--b-color);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    padding: 0.5rem;
+    background-color: var(--a-color);
+    color: var(--b-color);
+    cursor: pointer;
+    transition: all .5s ease;
+}
+
+.custom-btn:hover {
+    background-color: var(--b-color);
+    color: var(--a-color);
+}
+
+.spinner {
+    display: none;
+    border: 3px dotted var(--b-color);
+    height: 2.5rem;
+    width: 2.5rem;
+    border-radius: 50%;
+    animation: spin 3s linear infinite;
+}
+
+.visible {
+    display: block;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+h1 {
+    text-align: center;
+    font-size: 3rem;
+    color: var(--b-color);
+}
+
+@Media(width < 500px) {
+    h1 {
+        font-size: 2.5rem;
+    }
+}

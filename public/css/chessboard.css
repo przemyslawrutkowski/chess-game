@@ -1,0 +1,136 @@
+.chessboard-section {
+    padding: 1.5rem 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 3em;
+}
+
+.chessboard {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    width: 100%;
+    height: 100%;
+    max-width: 600px;
+    max-height: 600px;
+}
+
+.cell {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.cell svg {
+    width: 70%;
+    height: 70%;
+}
+
+.whose-turn {
+    text-align: center;
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid var(--panel-color);
+    background-color: var(--panel-color);
+    color: var(--b-color);
+    border-radius: 0.5rem;
+
+}
+
+.chess-field-light {
+    background-color: var(--chess-field-a-color);
+}
+
+.chess-field-dark {
+    background-color: var(--chess-field-b-color);
+}
+
+.chess-piece-light {
+    fill: var(--chess-piece-a-color);
+}
+
+.chess-piece-dark {
+    fill: var(--chess-piece-b-color);
+}
+
+.info-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    width: 300px;
+}
+
+.opponents-info {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+}
+
+.opponent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100px;
+}
+
+.opponent .avatar {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--panel-color);
+    height: 50px;
+    width: 50px;
+    margin-bottom: 0.5rem;
+    border-radius: 1rem;
+}
+
+.opponent .avatar svg {
+    width: 70%;
+    height: 70%;
+}
+
+.score-board {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 1rem;
+    border: 1px solid var(--b-color);
+}
+
+.score-board .score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+}
+
+.light-score,
+.dark-score {
+    font-weight: bold;
+}
+
+@Media(width < 800px) {
+    .chessboard-section {
+        flex-direction: column;
+        align-items: center;
+        gap: 3em;
+    }
+
+    .info-panel {
+        order: 2;
+    }
+
+    .chessboard {
+        order: 1;
+    }
+}
