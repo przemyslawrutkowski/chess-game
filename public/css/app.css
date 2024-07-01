@@ -50,41 +50,6 @@ main {
     padding: 0 1.5rem;
 }
 
-.custom-btn {
-    border: 3px solid var(--b-color);
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    padding: 0.5rem;
-    background-color: var(--a-color);
-    color: var(--b-color);
-    cursor: pointer;
-    transition: all .5s ease;
-}
-
-.custom-btn:hover {
-    background-color: var(--b-color);
-    color: var(--a-color);
-}
-
-.spinner {
-    display: none;
-    border: 3px dotted var(--b-color);
-    height: 2.5rem;
-    width: 2.5rem;
-    border-radius: 50%;
-    animation: spin 3s linear infinite;
-}
-
-.visible {
-    display: block;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
 h1 {
     text-align: center;
     font-size: 3rem;
@@ -94,5 +59,37 @@ h1 {
 @Media(width < 500px) {
     h1 {
         font-size: 2.5rem;
+    }
+}
+
+.start-section {
+    padding: 1.5rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3rem;
+}
+
+.chessboard-section {
+    padding: 1.5rem 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 3rem;
+}
+
+@Media(width < 800px) {
+    .chessboard-section {
+        flex-direction: column;
+        align-items: center;
+        gap: 3rem;
+    }
+
+    chessboard-panel {
+        order: 1;
+    }
+
+    info-panel {
+        order: 2;
     }
 }

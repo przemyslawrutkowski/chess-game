@@ -25,8 +25,8 @@ const navigationModule = {
     },
     init: function () {
         Promise.all([
-            this.fetchPage('/html/start.html', '/'),
-            this.fetchPage('/html/chessboard.html', '/chessboard')
+            this.fetchPage('/html/startSection.html', '/'),
+            this.fetchPage('/html/chessboardSection.html', '/chessboard')
         ]).then(() => {
             this.loadPage('/', false);
             window.addEventListener('popstate', () => this.loadPage('/', false));

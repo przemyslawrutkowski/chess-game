@@ -2,27 +2,30 @@ import Events from '../../src/events/Events.js';
 import SocketConnection from '../../src/models/SocketConnection.js';
 export default function startInit(onSuccess) {
     try {
-        const usernameForm = document.getElementById('username-form');
-        const connectBtn = document.querySelector('.custom-btn');
-        const spinner = document.querySelector('.spinner');
-        if (!usernameForm || !connectBtn || !spinner)
+        const usernameForm = document.querySelector('username-form');
+        const shadowRoot = usernameForm.shadowRoot;
+        let connectButton;
+        if (shadowRoot) {
+            connectButton = shadowRoot.querySelector('connect-button');
+        }
+        const spinner = document.querySelector('loading-spinner');
+        if (!usernameForm || !connectButton || !spinner)
             throw new Error('Page content was not generated correctly');
-        const usernameInput = usernameForm.elements.namedItem('username'); //.value
-        let btnStatus = 'Connect';
+        let buttonStatus = 'Connect';
         const socket = SocketConnection.getInstance();
-        connectBtn.addEventListener('click', async (event) => {
+        connectButton.addEventListener('click', async (event) => {
             event.preventDefault();
-            if (btnStatus === 'Connect') {
-                if (!usernameInput.value.trim())
+            if (buttonStatus === 'Connect') {
+                if (!usernameForm.getUsernameInput())
                     return;
                 //wysylamy zadanie do serwera
-                socket.emit(Events.MATCH, { username: usernameInput.value });
+                socket.emit(Events.MATCH, { username: usernameForm.getUsernameInput() });
                 //zmieniamy status przycisku
-                btnStatus = 'Disconnect';
+                buttonStatus = 'Disconnect';
                 //uwidaczniamy spinner
-                spinner.classList.add('visible');
+                spinner.show();
                 //zmieniamy tekst na przycisku
-                connectBtn.innerText = btnStatus;
+                connectButton.setStatus(buttonStatus);
                 //czekamy na odpowiedz
                 socket.on(Events.MATCH_FOUND, () => onSuccess());
             }
@@ -31,11 +34,11 @@ export default function startInit(onSuccess) {
                 socket.emit(Events.REMOVE_FROM_POOL);
                 socket.on(Events.REMOVED_FROM_POOL, () => socket.disconnect());
                 //zmieniamy status przycisku
-                btnStatus = 'Connect';
+                buttonStatus = 'Connect';
                 //ukrywamy spinner
-                spinner.classList.remove('visible');
+                spinner.hide();
                 //zmieniamy tekst na przycisku
-                connectBtn.innerText = btnStatus;
+                connectButton.setStatus(buttonStatus);
             }
         });
     }

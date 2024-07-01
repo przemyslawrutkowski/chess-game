@@ -51,7 +51,7 @@ const httpServer = createServer((req, res) => {
     let filePath: string;
     let contentType: string;
 
-    if (pathname.startsWith('/js') || pathname.startsWith('/html') || pathname.startsWith('/css')) {
+    if (pathname.startsWith('/js') || pathname.startsWith('/html') || pathname.startsWith('/css') || pathname.startsWith('/components')) {
         filePath = path.join(rootPath, 'public', pathname);
         switch (path.extname(filePath)) {
             case '.js':

@@ -1,8 +1,38 @@
-import { PlayerColor } from '../enums/PlayerColor.js';
-import { MovementStrategy } from "../enums/MovementStrategy.js";
-export default function createChessPieceSVG(playerColor, movementStrategy) {
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+import globalStyle from '../js/globalStyles.js';
+import { PlayerColor } from '../../src/enums/PlayerColor.js';
+import { MovementStrategy } from '../../src/enums/MovementStrategy.js';
+const template = document.createElement('template');
+template.innerHTML = `
+    <style>
+        .chess-piece {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .chess-piece-light {
+            fill: var(--chess-piece-a-color);
+        }
+
+        .chess-piece-dark {
+            fill: var(--chess-piece-b-color);
+        }
+
+        svg {
+            width: 70%;
+            height: 70%;
+        }
+    </style>
+
+    <div class="chess-piece">
+        <svg>
+            <path/>
+        </svg>
+    </div>
+`;
+function setAttributes(svg, path, movementStrategy) {
     if (movementStrategy === MovementStrategy.PawnMovement) {
         svg.setAttribute('viewBox', '0 0 320 512');
         path.setAttribute('d', 'M215.5 224c29.2-18.4 48.5-50.9 48.5-88c0-57.4-46.6-104-104-104S56 78.6 56 136c0 37.1 19.4 69.6 48.5 88H96c-17.7 0-32 14.3-32 32c0 16.5 12.5 30 28.5 31.8L80 400H240L227.5 287.8c16-1.8 28.5-15.3 28.5-31.8c0-17.7-14.3-32-32-32h-8.5zM22.6 473.4c-4.2 4.2-6.6 10-6.6 16C16 501.9 26.1 512 38.6 512H281.4c12.5 0 22.6-10.1 22.6-22.6c0-6-2.4-11.8-6.6-16L256 432H64L22.6 473.4z');
@@ -27,10 +57,24 @@ export default function createChessPieceSVG(playerColor, movementStrategy) {
         svg.setAttribute('viewBox', '0 0 448 512');
         path.setAttribute('d', 'M224 0c17.7 0 32 14.3 32 32V48h16c17.7 0 32 14.3 32 32s-14.3 32-32 32H256v48H408c22.1 0 40 17.9 40 40c0 5.3-1 10.5-3.1 15.4L368 400H80L3.1 215.4C1 210.5 0 205.3 0 200c0-22.1 17.9-40 40-40H192V112H176c-17.7 0-32-14.3-32-32s14.3-32 32-32h16V32c0-17.7 14.3-32 32-32zM38.6 473.4L80 432H368l41.4 41.4c4.2 4.2 6.6 10 6.6 16c0 12.5-10.1 22.6-22.6 22.6H54.6C42.1 512 32 501.9 32 489.4c0-6 2.4-11.8 6.6-16z');
     }
+}
+function setColor(path, playerColor) {
     if (playerColor === PlayerColor.Light)
         path.classList.add('chess-piece-light');
-    else if (playerColor === PlayerColor.Dark)
+    else
         path.classList.add('chess-piece-dark');
-    svg.appendChild(path);
-    return svg;
 }
+export default class ChessPiece extends HTMLElement {
+    constructor(playerColor, movementStrategy) {
+        super();
+        const clone = template.content.cloneNode(true);
+        const svg = clone.querySelector('svg');
+        const path = clone.querySelector('path');
+        setAttributes(svg, path, movementStrategy);
+        setColor(path, playerColor);
+        const shadowRoot = this.attachShadow({ mode: 'open' });
+        shadowRoot.appendChild(clone);
+        shadowRoot.adoptedStyleSheets = [globalStyle];
+    }
+}
+customElements.define('chess-piece', ChessPiece);

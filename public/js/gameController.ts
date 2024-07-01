@@ -1,11 +1,11 @@
 import Events from '../../src/events/Events.js';
 import ClientGame from '../../src/models/ClientGame.js';
-import createChessPieceSVG from '../../src/utils/DOMElementsCreator.js';
 import SocketConnection from '../../src/models/SocketConnection.js';
 import { GameDTO, UserDTO, ChessboardDTO } from '../../src/interfaces/DTO.js';
 import ClientUser from '../../src/models/ClientUser.js';
 import ChessPiece from '../../src/models/ChessPiece.js';
-import { PlayerColor } from '../../src/enums/PlayerColor.js';
+import InfoPanel from '../components/InfoPanel.js';
+import ChessboardPanel from '../components/ChessboardPanel.js';
 
 function reconstructGame(game: GameDTO): ClientGame {
     const user1: UserDTO = game.user1;
@@ -31,79 +31,41 @@ function reconstructGame(game: GameDTO): ClientGame {
 
 export default function gameController() {
     try {
-        const opponents = document.querySelectorAll('.opponents-info .opponent') as NodeListOf<Element>;
-        const whoseTurn = document.querySelector('.whose-turn') as HTMLParagraphElement;
-        const chessboardContainer = document.querySelector('.chessboard') as HTMLDivElement;
+        const infoPanel = document.querySelector('info-panel') as InfoPanel;
+        const chessboardPanel = document.querySelector('chessboard-panel') as ChessboardPanel;
 
-        if (!whoseTurn || !chessboardContainer) throw new Error('Page content was not generated correctly');
+        if (!infoPanel || !chessboardPanel) throw new Error('Page content was not generated correctly');
 
         const socket = SocketConnection.getInstance();
 
-        let infoPanelSet = false;
+        let infoPanelInitialized = false;
+        let chessboardInitialized = false;
 
-        socket.emit(Events.GET_GAME_STATE); //ONLY AT THE BEGINNING, ONCE!
+        socket.emit(Events.GET_GAME_STATE);
 
         socket.on(Events.GAME_STATE, (game: GameDTO) => {
             const reconstructedGame = reconstructGame(game);
-            console.log(reconstructedGame);
-            const user1 = reconstructedGame.getUser1();
-            const user2 = reconstructedGame.getUser2();
+
             const chessboard = reconstructedGame.getChessboard();
             const whoseUserTurn = reconstructedGame.getWhoseTurn();
 
-            chessboardContainer.innerHTML = '';
+            chessboardPanel.innerHTML = '';
 
-            if (opponents.length === 2 && !infoPanelSet) {
-                const opponent1 = opponents.item(0) as HTMLDivElement;
-                const opponent2 = opponents.item(1) as HTMLDivElement;
+            if (!infoPanelInitialized) {
+                const user1 = reconstructedGame.getUser1();
+                const user2 = reconstructedGame.getUser2();
 
-                const opponent1Avatar = opponent1.querySelector('.avatar path') as SVGPathElement;
-                const opponent2Avatar = opponent2.querySelector('.avatar path') as SVGPathElement;
-
-                const opponent1Username = opponent1.querySelector('.username') as HTMLParagraphElement;
-                const opponent2Username = opponent2.querySelector('.username') as HTMLParagraphElement;
-
-                if (user1.getColor() === PlayerColor.Light) {
-                    opponent1Avatar.classList.add('chess-piece-light');
-                    opponent2Avatar.classList.add('chess-piece-dark');
-                }
-                else {
-                    opponent2Avatar.classList.add('chess-piece-light');
-                    opponent1Avatar.classList.add('chess-piece-dark');
-                }
-
-                opponent1Username.innerText = user1.getUsername();
-                opponent2Username.innerText = user2.getUsername();
-
-                infoPanelSet = true;
+                infoPanel.initialize(user1, user2);
+                infoPanelInitialized = true;
             }
 
-            whoseTurn.innerText = `It's ${whoseUserTurn.getUsername()} turn...`;
+            infoPanel.setWhoseTurn(whoseUserTurn.getUsername());
 
-            for (let row = 0; row < 8; row++) {
-                for (let col = 0; col < 8; col++) {
-                    const cell = document.createElement('div');
-                    cell.setAttribute('x-pos', row.toString());
-                    cell.setAttribute('y-pos', col.toString());
-                    cell.classList.add('cell');
-                    cell.classList.add((row + col) % 2 === 0 ? 'chess-field-light' : 'chess-field-dark');
-
-                    const chessPiece = chessboard[row][col];
-                    if (chessPiece) {
-                        const chessPieceUser = chessPiece.getUser();
-                        const chessPieceMovementStrategy = chessPiece.getMovementStrategy();
-                        const chessPieceColor = chessPieceUser.getColor();
-
-                        let svg;
-
-                        if (chessPieceColor !== undefined) {
-                            svg = createChessPieceSVG(chessPieceColor, chessPieceMovementStrategy);
-                            cell.appendChild(svg);
-                        }
-                    }
-                    chessboardContainer.appendChild(cell);
-                }
+            if (!chessboardInitialized) {
+                chessboardPanel.initialize(chessboard);
+                chessboardInitialized = true;
             }
+
         });
 
     } catch (err) {
