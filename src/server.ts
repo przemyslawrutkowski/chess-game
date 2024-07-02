@@ -66,7 +66,7 @@ const httpServer = createServer((req, res) => {
             default:
                 contentType = 'text/plain';
         }
-    } else if (pathname.startsWith('/src/models') || pathname.startsWith('/src/enums') || pathname.startsWith('/src/events') || pathname.startsWith('/src/utils')) {
+    } else if (pathname.startsWith('/src/models') || pathname.startsWith('/src/enums') || pathname.startsWith('/src/events')) {
         filePath = path.join(rootPath, pathname);
         contentType = 'text/javascript';
     }

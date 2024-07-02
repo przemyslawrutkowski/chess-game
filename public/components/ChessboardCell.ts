@@ -20,6 +20,12 @@ template.innerHTML = `
             width: 100%;
             height: 100%;
         }
+
+        chessboard-cell,
+        chess-piece {
+            width: 100%;
+            height: 100%;
+        }
     </style>
 
     <div class="cell"></div>
