@@ -19,7 +19,6 @@ template.innerHTML = `
             height: 100%;
         }
 
-        chessboard-cell,
         chess-piece {
             width: 100%;
             height: 100%;
@@ -28,15 +27,17 @@ template.innerHTML = `
 
     <div class="cell"></div>
 `;
-export default class ChessboardCell extends HTMLElement {
+export default class ChessboardCellUI extends HTMLElement {
     cell;
-    constructor(xPos, yPos) {
+    xPosition;
+    yPosition;
+    constructor(xPosition, yPosition) {
         super();
         const clone = template.content.cloneNode(true);
         this.cell = clone.querySelector('.cell');
-        this.cell.setAttribute('x-pos', xPos.toString());
-        this.cell.setAttribute('y-pos', yPos.toString());
-        this.cell.classList.add((xPos + yPos) % 2 === 0 ? 'chess-field-light' : 'chess-field-dark');
+        this.xPosition = xPosition;
+        this.yPosition = yPosition;
+        this.cell.classList.add((xPosition + yPosition) % 2 === 0 ? 'chess-field-light' : 'chess-field-dark');
         const shadowRoot = this.attachShadow({ mode: 'open' });
         shadowRoot.appendChild(clone);
         shadowRoot.adoptedStyleSheets = [globalStyle];
@@ -44,5 +45,17 @@ export default class ChessboardCell extends HTMLElement {
     setChessPiece(chessPiece) {
         this.cell.appendChild(chessPiece);
     }
+    unsetChessPiece() {
+        this.cell.innerHTML = '';
+    }
+    getChessPiece() {
+        return this.cell.querySelector('chess-piece');
+    }
+    getXPosition() {
+        return this.xPosition;
+    }
+    getYPosition() {
+        return this.yPosition;
+    }
 }
-customElements.define('chessboard-cell', ChessboardCell);
+customElements.define('chessboard-cell', ChessboardCellUI);

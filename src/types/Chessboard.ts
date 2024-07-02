@@ -1,3 +1,3 @@
-import ChessPiece from "../models/ChessPiece.js";
+import ChessboardCell from "../models/ChessboardCell.js";
 
-export type Chessboard = Array<Array<ChessPiece | null>>;
+export type Chessboard = Array<Array<ChessboardCell>>;

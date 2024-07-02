@@ -1,6 +1,7 @@
 import ServerUser from "./ServerUser.js";
 import ChessPiece from "./ChessPiece.js";
 import ClientGame from "./ClientGame.js";
+import ChessboardCell from "./ChessboardCell.js";
 export default class ServerGame {
     user1;
     user2;
@@ -32,15 +33,16 @@ export default class ServerGame {
     setClientGame() {
         const clientUser1 = this.user1.getClientUser();
         const clientUser2 = this.user2.getClientUser();
-        const clientChessboard = this.chessboard.map(row => row.map(piece => {
-            if (piece) {
-                const pieceOwner = piece.getUser();
-                if (pieceOwner instanceof ServerUser) {
-                    return new ChessPiece(pieceOwner.getClientUser(), piece.getMovementStrategy());
+        const clientChessboard = this.chessboard.map(row => row.map(cell => {
+            const chessPiece = cell.getChessPiece();
+            if (chessPiece) {
+                const owner = chessPiece.getUser();
+                if (owner instanceof ServerUser) {
+                    const clientChessPiece = new ChessPiece(owner.getClientUser(), chessPiece.getMovementStrategy());
+                    return new ChessboardCell(cell.getXPosition(), cell.getYPosition(), clientChessPiece);
                 }
-                return null;
             }
-            return null;
+            return new ChessboardCell(cell.getXPosition(), cell.getYPosition(), null);
         }));
         const whoseTurn = this.whoseTurn.getClientUser();
         return new ClientGame(clientUser1, clientUser2, clientChessboard, whoseTurn);

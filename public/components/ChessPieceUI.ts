@@ -27,7 +27,7 @@ template.innerHTML = `
         }
     </style>
 
-    <div class="chess-piece">
+    <div class="chess-piece" draggable="true">
         <svg>
             <path/>
         </svg>
@@ -61,7 +61,7 @@ function setColor(path: SVGPathElement, playerColor: PlayerColor): void {
     else path.classList.add('chess-piece-dark');
 }
 
-export default class ChessPiece extends HTMLElement {
+export default class ChessPieceUI extends HTMLElement {
 
     constructor(playerColor: PlayerColor, movementStrategy: MovementStrategy) {
         super();
@@ -76,4 +76,4 @@ export default class ChessPiece extends HTMLElement {
     }
 }
 
-customElements.define('chess-piece', ChessPiece);
+customElements.define('chess-piece', ChessPieceUI);

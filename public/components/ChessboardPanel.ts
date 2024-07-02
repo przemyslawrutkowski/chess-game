@@ -1,7 +1,8 @@
 import globalStyle from '../js/globalStyles.js';
 import { Chessboard } from '../../src/types/Chessboard.js';
-import ChessPiece from './ChessPiece.js';
-import ChessboardCell from './ChessboardCell.js';
+import ChessPieceUI from './ChessPieceUI.js';
+import ChessboardCellUI from './ChessboardCellUI.js';
+import ChessboardCell from '../../src/models/ChessboardCell.js';
 
 const template = document.createElement('template');
 template.innerHTML = `
@@ -36,22 +37,23 @@ export default class ChessboardPanel extends HTMLElement {
     }
 
     initialize(chessboard: Chessboard) {
-        for (let row = 0; row < 8; row++) {
-            for (let col = 0; col < 8; col++) {
-                const cell = new ChessboardCell(row, col);
+        for (let x = 0; x < 8; x++) {
+            for (let y = 0; y < 8; y++) {
+                const chessboardCell = chessboard[x][y];
+                const chessboardCellUI = new ChessboardCellUI(chessboardCell.getXPosition(), chessboardCell.getYPosition());
 
-                const chessPiece = chessboard[row][col];
+                const chessPiece = chessboardCell.getChessPiece();
                 if (chessPiece) {
                     const chessPieceUser = chessPiece.getUser();
                     const chessPieceMovementStrategy = chessPiece.getMovementStrategy();
                     const chessPieceColor = chessPieceUser.getColor();
 
                     if (chessPieceColor !== undefined) {
-                        let chessPieceComp = new ChessPiece(chessPieceColor, chessPieceMovementStrategy);
-                        cell.setChessPiece(chessPieceComp);
+                        let chessPieceUI = new ChessPieceUI(chessPieceColor, chessPieceMovementStrategy);
+                        chessboardCellUI.setChessPiece(chessPieceUI);
                     }
                 }
-                this.chessboard.appendChild(cell);
+                this.chessboard.appendChild(chessboardCellUI);
             }
         }
     }

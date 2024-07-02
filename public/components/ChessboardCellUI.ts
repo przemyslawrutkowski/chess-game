@@ -1,5 +1,5 @@
 import globalStyle from '../js/globalStyles.js';
-import ChessPiece from './ChessPiece.js';
+import ChessPieceUI from './ChessPieceUI.js';
 
 const template = document.createElement('template');
 template.innerHTML = `
@@ -21,7 +21,6 @@ template.innerHTML = `
             height: 100%;
         }
 
-        chessboard-cell,
         chess-piece {
             width: 100%;
             height: 100%;
@@ -31,24 +30,44 @@ template.innerHTML = `
     <div class="cell"></div>
 `;
 
-export default class ChessboardCell extends HTMLElement {
+export default class ChessboardCellUI extends HTMLElement {
     private cell: HTMLDivElement;
+    private xPosition: number;
+    private yPosition: number;
 
-    constructor(xPos: number, yPos: number) {
+    constructor(xPosition: number, yPosition: number) {
         super();
         const clone = template.content.cloneNode(true) as DocumentFragment;
         this.cell = clone.querySelector('.cell') as HTMLDivElement;
-        this.cell.setAttribute('x-pos', xPos.toString());
-        this.cell.setAttribute('y-pos', yPos.toString());
-        this.cell.classList.add((xPos + yPos) % 2 === 0 ? 'chess-field-light' : 'chess-field-dark');
+
+        this.xPosition = xPosition;
+        this.yPosition = yPosition;
+        this.cell.classList.add((xPosition + yPosition) % 2 === 0 ? 'chess-field-light' : 'chess-field-dark');
+
         const shadowRoot = this.attachShadow({ mode: 'open' });
         shadowRoot.appendChild(clone);
         shadowRoot.adoptedStyleSheets = [globalStyle];
     }
 
-    setChessPiece(chessPiece: ChessPiece) {
+    setChessPiece(chessPiece: ChessPieceUI) {
         this.cell.appendChild(chessPiece);
+    }
+
+    unsetChessPiece() {
+        this.cell.innerHTML = '';
+    }
+
+    getChessPiece() {
+        return this.cell.querySelector('chess-piece');
+    }
+
+    getXPosition() {
+        return this.xPosition;
+    }
+
+    getYPosition() {
+        return this.yPosition;
     }
 }
 
-customElements.define('chessboard-cell', ChessboardCell);
+customElements.define('chessboard-cell', ChessboardCellUI);

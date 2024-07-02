@@ -14,8 +14,15 @@ export interface UserDTO {
 }
 
 export interface ChessPieceDTO {
+    id: string;
     user: UserDTO;
     movementStrategy: MovementStrategy;
 }
 
-export type ChessboardDTO = Array<Array<ChessPieceDTO | null>>;
+export interface ChessboardCell {
+    xPosition: number;
+    yPosition: number;
+    chessPiece: ChessPieceDTO | null;
+}
+
+export type ChessboardDTO = Array<Array<ChessboardCell>>;

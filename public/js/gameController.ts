@@ -4,6 +4,7 @@ import SocketConnection from '../../src/models/SocketConnection.js';
 import { GameDTO, UserDTO, ChessboardDTO } from '../../src/interfaces/DTO.js';
 import ClientUser from '../../src/models/ClientUser.js';
 import ChessPiece from '../../src/models/ChessPiece.js';
+import ChessboardCell from '../../src/models/ChessboardCell.js';
 import InfoPanel from '../components/InfoPanel.js';
 import ChessboardPanel from '../components/ChessboardPanel.js';
 
@@ -16,13 +17,15 @@ function reconstructGame(game: GameDTO): ClientGame {
     const reconstructedUser1 = new ClientUser(user1.username, user1.color);
     const reconstructedUser2 = new ClientUser(user2.username, user2.color);
     const reconstructedChessboard = chessboard.map(row =>
-        row.map(piece => {
-            if (piece) {
-                const pieceOwner = piece.user;
-                const reconstructedPieceOwner = new ClientUser(pieceOwner.username, pieceOwner.color);
-                return new ChessPiece(reconstructedPieceOwner, piece.movementStrategy);
+        row.map(cell => {
+            const chessPiece = cell.chessPiece;
+            if (chessPiece) {
+                const owner = chessPiece.user;
+                const reconstructedOwner = new ClientUser(owner.username, owner.color);
+                const reconstructedChessPiece = new ChessPiece(reconstructedOwner, chessPiece.movementStrategy);
+                return new ChessboardCell(cell.xPosition, cell.yPosition, reconstructedChessPiece);
             }
-            return null;
+            return new ChessboardCell(cell.xPosition, cell.yPosition, null);
         })
     );
     const reconstructedWhoseTurn = new ClientUser(whoseTurn.username, whoseTurn.color);

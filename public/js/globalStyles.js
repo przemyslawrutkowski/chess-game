@@ -7,5 +7,5 @@ h1, h2, h3, h4, h5, h6, p {
 * {
     box-sizing: border-box;
 }
-    `).catch(console.error); // Dodaj obsługę błędów
+    `).catch(console.error);
 export default stylesheet;
