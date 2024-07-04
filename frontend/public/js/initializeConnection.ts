@@ -1,18 +1,18 @@
 import Events from '../../../shared/src/events/Events.js';
 import SocketConnection from '../../src/models/SocketConnection.js';
-import LoadingSpinner from '../components/LoadingSpinner.js';
-import UsernameForm from '../components/UsernameForm.js';
-import ConnectButton from '../components/ConnectButton.js';
+import LoadingSpinnerC from '../components/LoadingSpinner.js';
+import UsernameFormC from '../components/UsernameForm.js';
+import ConnectButtonC from '../components/ConnectButton.js';
 
 export default function startInit(onSuccess: () => void) {
     try {
-        const usernameForm = document.querySelector('username-form') as UsernameForm;
+        const usernameForm = document.querySelector('username-form') as UsernameFormC;
         const shadowRoot = usernameForm.shadowRoot as ShadowRoot;
-        let connectButton: ConnectButton | undefined;
+        let connectButton: ConnectButtonC | undefined;
         if (shadowRoot) {
-            connectButton = shadowRoot.querySelector('connect-button') as ConnectButton;
+            connectButton = shadowRoot.querySelector('connect-button') as ConnectButtonC;
         }
-        const spinner = document.querySelector('loading-spinner') as LoadingSpinner;
+        const spinner = document.querySelector('loading-spinner') as LoadingSpinnerC;
 
         if (!usernameForm || !connectButton || !spinner) throw new Error('Page content was not generated correctly');
 

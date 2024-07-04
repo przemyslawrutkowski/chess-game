@@ -5,8 +5,8 @@ import { GameDTO, UserDTO, ChessboardDTO } from '../../src/interfaces/DTO.js';
 import ClientUser from '../../src/models/ClientUser.js';
 import ChessPiece from '../../src/models/ChessPiece.js';
 import ChessboardCell from '../../src/models/ChessboardCell.js';
-import InfoPanel from '../components/InfoPanel.js';
-import ChessboardPanel from '../components/ChessboardPanel.js';
+import InfoPanelC from '../components/InfoPanel.js';
+import ChessboardPanelC from '../components/ChessboardPanel.js';
 
 function reconstructGame(game: GameDTO): ClientGame {
     const user1: UserDTO = game.user1;
@@ -34,8 +34,8 @@ function reconstructGame(game: GameDTO): ClientGame {
 
 export default function gameController() {
     try {
-        const infoPanel = document.querySelector('info-panel') as InfoPanel;
-        const chessboardPanel = document.querySelector('chessboard-panel') as ChessboardPanel;
+        const infoPanel = document.querySelector('info-panel') as InfoPanelC;
+        const chessboardPanel = document.querySelector('chessboard-panel') as ChessboardPanelC;
 
         if (!infoPanel || !chessboardPanel) throw new Error('Page content was not generated correctly');
 

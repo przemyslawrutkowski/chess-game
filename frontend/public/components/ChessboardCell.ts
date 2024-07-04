@@ -1,5 +1,5 @@
 import globalStyle from '../js/globalStyles.js';
-import ChessPieceUI from './ChessPieceUI.js';
+import ChessPieceC from './ChessPiece.js';
 
 const template = document.createElement('template');
 template.innerHTML = `
@@ -30,7 +30,7 @@ template.innerHTML = `
     <div class="cell"></div>
 `;
 
-export default class ChessboardCellUI extends HTMLElement {
+export default class ChessboardCell extends HTMLElement {
     private cell: HTMLDivElement;
     private xPosition: number;
     private yPosition: number;
@@ -49,7 +49,7 @@ export default class ChessboardCellUI extends HTMLElement {
         shadowRoot.adoptedStyleSheets = [globalStyle];
     }
 
-    setChessPiece(chessPiece: ChessPieceUI) {
+    setChessPiece(chessPiece: ChessPieceC) {
         this.cell.appendChild(chessPiece);
     }
 
@@ -70,4 +70,4 @@ export default class ChessboardCellUI extends HTMLElement {
     }
 }
 
-customElements.define('chessboard-cell', ChessboardCellUI);
+customElements.define('chessboard-cell', ChessboardCell);

@@ -1,6 +1,6 @@
 import globalStyle from '../js/globalStyles.js';
-import ChessPieceUI from './ChessPieceUI.js';
-import ChessboardCellUI from './ChessboardCellUI.js';
+import ChessPieceC from './ChessPiece.js';
+import ChessboardCellC from './ChessboardCell.js';
 const template = document.createElement('template');
 template.innerHTML = `
     <style>
@@ -34,14 +34,14 @@ export default class ChessboardPanel extends HTMLElement {
         for (let x = 0; x < 8; x++) {
             for (let y = 0; y < 8; y++) {
                 const chessboardCell = chessboard[x][y];
-                const chessboardCellUI = new ChessboardCellUI(chessboardCell.getXPosition(), chessboardCell.getYPosition());
+                const chessboardCellUI = new ChessboardCellC(chessboardCell.getXPosition(), chessboardCell.getYPosition());
                 const chessPiece = chessboardCell.getChessPiece();
                 if (chessPiece) {
                     const chessPieceUser = chessPiece.getUser();
                     const chessPieceMovementStrategy = chessPiece.getMovementStrategy();
                     const chessPieceColor = chessPieceUser.getColor();
                     if (chessPieceColor !== undefined) {
-                        let chessPieceUI = new ChessPieceUI(chessPieceColor, chessPieceMovementStrategy);
+                        let chessPieceUI = new ChessPieceC(chessPieceColor, chessPieceMovementStrategy);
                         chessboardCellUI.setChessPiece(chessPieceUI);
                     }
                 }
