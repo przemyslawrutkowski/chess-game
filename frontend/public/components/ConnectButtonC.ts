@@ -1,4 +1,5 @@
 import globalStyle from '../js/globalStyles.js';
+
 const template = document.createElement('template');
 template.innerHTML = `
     <style>
@@ -21,18 +22,22 @@ template.innerHTML = `
 
     <button type="submit">Connect</button>
 `;
-export default class ConnectButton extends HTMLElement {
-    button;
+
+export default class ConnectButtonC extends HTMLElement {
+    private button: HTMLButtonElement;
+
     constructor() {
         super();
-        const clone = template.content.cloneNode(true);
-        this.button = clone.querySelector('button');
+        const clone = template.content.cloneNode(true) as DocumentFragment;
+        this.button = clone.querySelector('button') as HTMLButtonElement;
         const shadowRoot = this.attachShadow({ mode: 'open' });
         shadowRoot.appendChild(clone);
         shadowRoot.adoptedStyleSheets = [globalStyle];
     }
-    setStatus(status) {
+
+    setStatus(status: 'Connect' | 'Disconnect') {
         this.button.innerText = status;
     }
 }
-customElements.define('connect-button', ConnectButton);
+
+customElements.define('connect-button', ConnectButtonC);

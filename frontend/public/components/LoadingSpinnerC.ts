@@ -1,4 +1,5 @@
 import globalStyle from '../js/globalStyles.js';
+
 const template = document.createElement('template');
 template.innerHTML = `
     <style>
@@ -20,21 +21,26 @@ template.innerHTML = `
 
     <div></div>
 `;
-export default class LoadingSpinner extends HTMLElement {
-    div;
+
+export default class LoadingSpinnerC extends HTMLElement {
+    private div: HTMLElement;
+
     constructor() {
         super();
-        const clone = template.content.cloneNode(true);
-        this.div = clone.querySelector('div');
+        const clone = template.content.cloneNode(true) as DocumentFragment;
+        this.div = clone.querySelector('div') as HTMLElement;
         const shadowRoot = this.attachShadow({ mode: 'open' });
         shadowRoot.appendChild(clone);
         shadowRoot.adoptedStyleSheets = [globalStyle];
     }
+
     show() {
         this.div.style.display = 'block';
     }
+
     hide() {
         this.div.style.display = 'none';
     }
 }
-customElements.define('loading-spinner', LoadingSpinner);
+
+customElements.define('loading-spinner', LoadingSpinnerC);

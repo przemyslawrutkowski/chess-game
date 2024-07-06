@@ -7,6 +7,8 @@ import User from './models/ServerUser.js';
 import Game from './models/ServerGame.js';
 import ChessService from './services/ChessService.js';
 import Events from '../../shared/src/events/Events.js';
+import Position from '../../shared/src/models/Position.js';
+import Move from '../../shared/src/models/Move.js';
 
 const chessService = new ChessService();
 
@@ -63,6 +65,7 @@ const pathMappings = new Map<string, string>([
 const pathMappingsShared = new Map<string, string>([
     ['/enums', path.join(rootPath, 'frontend/dist/shared/src/enums')],
     ['/events', path.join(rootPath, 'frontend/dist/shared/src/events')],
+    ['/models', path.join(rootPath, 'frontend/dist/shared/src/models')]
 ]);
 
 
@@ -134,6 +137,10 @@ io.on("connection", (socket) => {
 
     socket.on(Events.GET_GAME_STATE, () => {
         getGameState(socket.id);
+    });
+
+    socket.on(Events.UPDATE_GAME_STATE, (move: Move) => {
+        console.log(move);
     });
 });
 

@@ -20,7 +20,7 @@ template.innerHTML = `
 
     <div></div>
 `;
-export default class LoadingSpinner extends HTMLElement {
+export default class LoadingSpinnerC extends HTMLElement {
     div;
     constructor() {
         super();
@@ -37,4 +37,4 @@ export default class LoadingSpinner extends HTMLElement {
         this.div.style.display = 'none';
     }
 }
-customElements.define('loading-spinner', LoadingSpinner);
+customElements.define('loading-spinner', LoadingSpinnerC);

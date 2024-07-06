@@ -21,7 +21,7 @@ template.innerHTML = `
 
     <button type="submit">Connect</button>
 `;
-export default class ConnectButton extends HTMLElement {
+export default class ConnectButtonC extends HTMLElement {
     button;
     constructor() {
         super();
@@ -35,4 +35,4 @@ export default class ConnectButton extends HTMLElement {
         this.button.innerText = status;
     }
 }
-customElements.define('connect-button', ConnectButton);
+customElements.define('connect-button', ConnectButtonC);

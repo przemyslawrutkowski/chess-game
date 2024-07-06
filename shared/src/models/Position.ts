@@ -7,11 +7,11 @@ export default class Position {
         this.y = y;
     }
 
-    getX() {
+    public getX() {
         return this.x;
     }
 
-    getY() {
+    public getY() {
         return this.y;
     }
 }

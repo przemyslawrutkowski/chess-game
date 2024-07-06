@@ -1,5 +1,7 @@
 import globalStyle from '../js/globalStyles.js';
+import ClientUser from '../../src/models/ClientUser.js';
 import { PlayerColor } from '../../../shared/src/enums/PlayerColor.js';
+
 const template = document.createElement('template');
 template.innerHTML = `
     <style>
@@ -122,25 +124,32 @@ template.innerHTML = `
         <p class="whose-turn"></p>
     </div>
 `;
-export default class InfoPanel extends HTMLElement {
-    opponents;
-    whoseTurn;
+
+export default class InfoPanelC extends HTMLElement {
+    private opponents: NodeListOf<Element>;
+    private whoseTurn: HTMLParagraphElement;
+
+
     constructor() {
         super();
-        const clone = template.content.cloneNode(true);
-        this.opponents = clone.querySelectorAll('.opponent');
-        this.whoseTurn = clone.querySelector('.whose-turn');
+        const clone = template.content.cloneNode(true) as DocumentFragment;
+        this.opponents = clone.querySelectorAll('.opponent') as NodeListOf<HTMLDivElement>;
+        this.whoseTurn = clone.querySelector('.whose-turn') as HTMLParagraphElement;
         const shadowRoot = this.attachShadow({ mode: 'open' });
         shadowRoot.appendChild(clone);
         shadowRoot.adoptedStyleSheets = [globalStyle];
     }
-    initialize(user1, user2) {
-        const opponent1 = this.opponents.item(0);
-        const opponent2 = this.opponents.item(1);
-        const opponent1Avatar = opponent1.querySelector('.avatar path');
-        const opponent2Avatar = opponent2.querySelector('.avatar path');
-        const opponent1Username = opponent1.querySelector('.username');
-        const opponent2Username = opponent2.querySelector('.username');
+
+    initialize(user1: ClientUser, user2: ClientUser) {
+        const opponent1 = this.opponents.item(0) as HTMLDivElement;
+        const opponent2 = this.opponents.item(1) as HTMLDivElement;
+
+        const opponent1Avatar = opponent1.querySelector('.avatar path') as SVGPathElement;
+        const opponent2Avatar = opponent2.querySelector('.avatar path') as SVGPathElement;
+
+        const opponent1Username = opponent1.querySelector('.username') as HTMLParagraphElement;
+        const opponent2Username = opponent2.querySelector('.username') as HTMLParagraphElement;
+
         if (user1.getColor() === PlayerColor.Light) {
             opponent1Avatar.classList.add('chess-piece-light');
             opponent2Avatar.classList.add('chess-piece-dark');
@@ -149,11 +158,14 @@ export default class InfoPanel extends HTMLElement {
             opponent2Avatar.classList.add('chess-piece-light');
             opponent1Avatar.classList.add('chess-piece-dark');
         }
+
         opponent1Username.innerText = user1.getUsername();
         opponent2Username.innerText = user2.getUsername();
     }
-    setWhoseTurn(username) {
+
+    setWhoseTurn(username: string) {
         this.whoseTurn.innerText = `It's ${username} turn...`;
     }
 }
-customElements.define('info-panel', InfoPanel);
+
+customElements.define('info-panel', InfoPanelC);

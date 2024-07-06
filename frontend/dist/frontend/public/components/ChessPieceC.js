@@ -26,7 +26,7 @@ template.innerHTML = `
         }
     </style>
 
-    <div class="chess-piece" draggable="true">
+    <div class="chess-piece">
         <svg>
             <path/>
         </svg>
@@ -64,17 +64,40 @@ function setColor(path, playerColor) {
     else
         path.classList.add('chess-piece-dark');
 }
-export default class ChessPiece extends HTMLElement {
-    constructor(playerColor, movementStrategy) {
+export default class ChessPieceC extends HTMLElement {
+    chessPiece;
+    constructor(chessPiece) {
         super();
         const clone = template.content.cloneNode(true);
         const svg = clone.querySelector('svg');
         const path = clone.querySelector('path');
-        setAttributes(svg, path, movementStrategy);
-        setColor(path, playerColor);
+        this.chessPiece = chessPiece;
+        setAttributes(svg, path, chessPiece.getMovementStrategy());
+        setColor(path, chessPiece.getUser().getColor());
         const shadowRoot = this.attachShadow({ mode: 'open' });
         shadowRoot.appendChild(clone);
         shadowRoot.adoptedStyleSheets = [globalStyle];
+        this.setAttribute('draggable', 'true');
+        this.addEventListener('dragstart', this.handleDragStart);
+    }
+    handleDragStart(event) {
+        const customEvent = new CustomEvent('requestPosition', {
+            detail: {
+                callback: (position) => {
+                    if (event.dataTransfer) {
+                        const moveData = {
+                            chessPieceId: this.chessPiece.getId(),
+                            position: position
+                        };
+                        event.dataTransfer.setData('application/json', JSON.stringify(moveData));
+                        event.dataTransfer.effectAllowed = 'move';
+                    }
+                }
+            },
+            bubbles: true,
+            composed: true
+        });
+        this.dispatchEvent(customEvent);
     }
 }
-customElements.define('chess-piece', ChessPiece);
+customElements.define('chess-piece', ChessPieceC);

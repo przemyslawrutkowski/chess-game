@@ -55,7 +55,7 @@ template.innerHTML = `
         <connect-button></connect-button>
     </form>
 `;
-export default class UsernameForm extends HTMLElement {
+export default class UsernameFormC extends HTMLElement {
     input;
     constructor() {
         super();
@@ -69,4 +69,4 @@ export default class UsernameForm extends HTMLElement {
         return this.input.value.trim();
     }
 }
-customElements.define('username-form', UsernameForm);
+customElements.define('username-form', UsernameFormC);

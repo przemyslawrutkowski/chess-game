@@ -11,15 +11,15 @@ export default class Move {
         this.newPosition = newPosition;
     }
 
-    getChessPieceId() {
+    public getChessPieceId() {
         return this.chessPieceId;
     }
 
-    getOldPosition() {
+    public getOldPosition() {
         return this.oldPosition;
     }
 
-    getNewPosition() {
+    public getNewPosition() {
         return this.newPosition;
     }
 }

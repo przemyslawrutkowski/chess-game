@@ -1,7 +1,7 @@
 import ClientUser from "./ClientUser.js";
 import { Chessboard } from "../types/Chessboard.js";
 
-export default class ServerGame {
+export default class ClientGame {
     private user1: ClientUser;
     private user2: ClientUser;
     private chessboard: Chessboard;

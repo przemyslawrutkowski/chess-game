@@ -1,4 +1,4 @@
-export default class ServerGame {
+export default class ClientGame {
     user1;
     user2;
     chessboard;

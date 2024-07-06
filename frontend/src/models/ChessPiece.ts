@@ -6,10 +6,10 @@ export default class ChessPiece {
     private user: ClientUser;
     private movementStrategy: MovementStrategy;
 
-    constructor(user: ClientUser, movementStrategy: MovementStrategy) {
+    constructor(id: string, user: ClientUser, movementStrategy: MovementStrategy) {
+        this.id = id;
         this.user = user;
         this.movementStrategy = movementStrategy;
-        this.id = crypto.randomUUID();
     }
 
     public getId(): string {

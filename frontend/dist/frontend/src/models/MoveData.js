@@ -1,4 +1,4 @@
-export default class Move {
+export default class MoveData {
     chessPieceId;
     position;
     constructor(chessPieceId, position) {

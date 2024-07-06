@@ -5,8 +5,8 @@ import { GameDTO, UserDTO, ChessboardDTO } from '../../src/interfaces/DTO.js';
 import ClientUser from '../../src/models/ClientUser.js';
 import ChessPiece from '../../src/models/ChessPiece.js';
 import ChessboardCell from '../../src/models/ChessboardCell.js';
-import InfoPanelC from '../components/InfoPanel.js';
-import ChessboardPanelC from '../components/ChessboardPanel.js';
+import InfoPanelC from '../components/InfoPanelC.js';
+import ChessboardPanelC from '../components/ChessboardPanelC.js';
 
 function reconstructGame(game: GameDTO): ClientGame {
     const user1: UserDTO = game.user1;
@@ -22,7 +22,7 @@ function reconstructGame(game: GameDTO): ClientGame {
             if (chessPiece) {
                 const owner = chessPiece.user;
                 const reconstructedOwner = new ClientUser(owner.username, owner.color);
-                const reconstructedChessPiece = new ChessPiece(reconstructedOwner, chessPiece.movementStrategy);
+                const reconstructedChessPiece = new ChessPiece(chessPiece.id, reconstructedOwner, chessPiece.movementStrategy);
                 return new ChessboardCell(cell.xPosition, cell.yPosition, reconstructedChessPiece);
             }
             return new ChessboardCell(cell.xPosition, cell.yPosition, null);
@@ -41,34 +41,22 @@ export default function gameController() {
 
         const socket = SocketConnection.getInstance();
 
-        let infoPanelInitialized = false;
-        let chessboardInitialized = false;
-
         socket.emit(Events.GET_GAME_STATE);
 
         socket.on(Events.GAME_STATE, (game: GameDTO) => {
             const reconstructedGame = reconstructGame(game);
 
             const chessboard = reconstructedGame.getChessboard();
+            const user1 = reconstructedGame.getUser1();
+            const user2 = reconstructedGame.getUser2();
             const whoseUserTurn = reconstructedGame.getWhoseTurn();
 
             chessboardPanel.innerHTML = '';
 
-            if (!infoPanelInitialized) {
-                const user1 = reconstructedGame.getUser1();
-                const user2 = reconstructedGame.getUser2();
-
-                infoPanel.initialize(user1, user2);
-                infoPanelInitialized = true;
-            }
-
+            infoPanel.initialize(user1, user2);
             infoPanel.setWhoseTurn(whoseUserTurn.getUsername());
 
-            if (!chessboardInitialized) {
-                chessboardPanel.initialize(chessboard);
-                chessboardInitialized = true;
-            }
-
+            chessboardPanel.initialize(chessboard);
         });
 
     } catch (err) {

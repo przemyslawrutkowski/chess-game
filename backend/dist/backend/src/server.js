@@ -51,6 +51,7 @@ const pathMappings = new Map([
 const pathMappingsShared = new Map([
     ['/enums', path.join(rootPath, 'frontend/dist/shared/src/enums')],
     ['/events', path.join(rootPath, 'frontend/dist/shared/src/events')],
+    ['/models', path.join(rootPath, 'frontend/dist/shared/src/models')]
 ]);
 const serveFile = (pathname, res) => {
     let filePath = '';
@@ -114,6 +115,9 @@ io.on("connection", (socket) => {
     });
     socket.on(Events.GET_GAME_STATE, () => {
         getGameState(socket.id);
+    });
+    socket.on(Events.UPDATE_GAME_STATE, (move) => {
+        console.log(move);
     });
 });
 httpServer.listen(port, () => {

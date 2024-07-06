@@ -16,7 +16,7 @@ function reconstructGame(game) {
         if (chessPiece) {
             const owner = chessPiece.user;
             const reconstructedOwner = new ClientUser(owner.username, owner.color);
-            const reconstructedChessPiece = new ChessPiece(reconstructedOwner, chessPiece.movementStrategy);
+            const reconstructedChessPiece = new ChessPiece(chessPiece.id, reconstructedOwner, chessPiece.movementStrategy);
             return new ChessboardCell(cell.xPosition, cell.yPosition, reconstructedChessPiece);
         }
         return new ChessboardCell(cell.xPosition, cell.yPosition, null);
@@ -31,25 +31,17 @@ export default function gameController() {
         if (!infoPanel || !chessboardPanel)
             throw new Error('Page content was not generated correctly');
         const socket = SocketConnection.getInstance();
-        let infoPanelInitialized = false;
-        let chessboardInitialized = false;
         socket.emit(Events.GET_GAME_STATE);
         socket.on(Events.GAME_STATE, (game) => {
             const reconstructedGame = reconstructGame(game);
             const chessboard = reconstructedGame.getChessboard();
+            const user1 = reconstructedGame.getUser1();
+            const user2 = reconstructedGame.getUser2();
             const whoseUserTurn = reconstructedGame.getWhoseTurn();
             chessboardPanel.innerHTML = '';
-            if (!infoPanelInitialized) {
-                const user1 = reconstructedGame.getUser1();
-                const user2 = reconstructedGame.getUser2();
-                infoPanel.initialize(user1, user2);
-                infoPanelInitialized = true;
-            }
+            infoPanel.initialize(user1, user2);
             infoPanel.setWhoseTurn(whoseUserTurn.getUsername());
-            if (!chessboardInitialized) {
-                chessboardPanel.initialize(chessboard);
-                chessboardInitialized = true;
-            }
+            chessboardPanel.initialize(chessboard);
         });
     }
     catch (err) {

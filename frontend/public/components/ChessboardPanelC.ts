@@ -1,8 +1,7 @@
 import globalStyle from '../js/globalStyles.js';
 import { Chessboard } from '../../src/types/Chessboard.js';
-import ChessPieceC from './ChessPiece.js';
-import ChessboardCellC from './ChessboardCell.js';
-import ChessboardCell from '../../src/models/ChessboardCell.js';
+import ChessPieceC from './ChessPieceC.js';
+import ChessboardCellC from './ChessboardCellC.js';
 
 const template = document.createElement('template');
 template.innerHTML = `
@@ -16,6 +15,8 @@ template.innerHTML = `
         }
 
         chessboard-cell {
+            position: relative;
+            z-index: 1000;
             width: 100%;
             height: 100%;
         }
@@ -24,7 +25,7 @@ template.innerHTML = `
     <div class="chessboard-panel"></div>
 `;
 
-export default class ChessboardPanel extends HTMLElement {
+export default class ChessboardPanelC extends HTMLElement {
     private chessboard: HTMLDivElement;
 
     constructor() {
@@ -40,23 +41,17 @@ export default class ChessboardPanel extends HTMLElement {
         for (let x = 0; x < 8; x++) {
             for (let y = 0; y < 8; y++) {
                 const chessboardCell = chessboard[x][y];
-                const chessboardCellUI = new ChessboardCellC(chessboardCell.getXPosition(), chessboardCell.getYPosition());
+                const chessboardCellC = new ChessboardCellC(chessboardCell);
 
                 const chessPiece = chessboardCell.getChessPiece();
                 if (chessPiece) {
-                    const chessPieceUser = chessPiece.getUser();
-                    const chessPieceMovementStrategy = chessPiece.getMovementStrategy();
-                    const chessPieceColor = chessPieceUser.getColor();
-
-                    if (chessPieceColor !== undefined) {
-                        let chessPieceUI = new ChessPieceC(chessPieceColor, chessPieceMovementStrategy);
-                        chessboardCellUI.setChessPiece(chessPieceUI);
-                    }
+                    const chessPieceC = new ChessPieceC(chessPiece);
+                    chessboardCellC.setChessPiece(chessPieceC);
                 }
-                this.chessboard.appendChild(chessboardCellUI);
+                this.chessboard.appendChild(chessboardCellC);
             }
         }
     }
 }
 
-customElements.define('chessboard-panel', ChessboardPanel);
+customElements.define('chessboard-panel', ChessboardPanelC);

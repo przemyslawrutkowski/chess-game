@@ -57,7 +57,7 @@ template.innerHTML = `
     </form>
 `;
 
-export default class UsernameForm extends HTMLElement {
+export default class UsernameFormC extends HTMLElement {
     private input: HTMLInputElement;
 
     constructor() {
@@ -75,4 +75,4 @@ export default class UsernameForm extends HTMLElement {
     }
 }
 
-customElements.define('username-form', UsernameForm);
+customElements.define('username-form', UsernameFormC);

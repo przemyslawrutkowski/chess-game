@@ -1,5 +1,6 @@
 import { MovementStrategy } from "../../../shared/src/enums/MovementStrategy.js";
 import { PlayerColor } from "../../../shared/src/enums/PlayerColor.js";
+import Position from "../../../shared/src/models/Position.js";
 
 export interface GameDTO {
     user1: UserDTO;
@@ -23,6 +24,11 @@ export interface ChessboardCell {
     xPosition: number;
     yPosition: number;
     chessPiece: ChessPieceDTO | null;
+}
+
+export interface MoveDTO {
+    chessPieceId: string;
+    position: Position;
 }
 
 export type ChessboardDTO = Array<Array<ChessboardCell>>;

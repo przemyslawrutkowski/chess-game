@@ -1,8 +1,8 @@
 import Events from '../../../shared/src/events/Events.js';
 import SocketConnection from '../../src/models/SocketConnection.js';
-import LoadingSpinnerC from '../components/LoadingSpinner.js';
-import UsernameFormC from '../components/UsernameForm.js';
-import ConnectButtonC from '../components/ConnectButton.js';
+import LoadingSpinnerC from '../components/LoadingSpinnerC.js';
+import UsernameFormC from '../components/UsernameFormC.js';
+import ConnectButtonC from '../components/ConnectButtonC.js';
 
 export default function startInit(onSuccess: () => void) {
     try {
