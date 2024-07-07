@@ -5,43 +5,17 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import User from './models/ServerUser.js';
 import Game from './models/ServerGame.js';
-import ChessService from './services/ChessService.js';
 import Events from '../../shared/src/events/Events.js';
 import Position from '../../shared/src/models/Position.js';
 import Move from '../../shared/src/models/Move.js';
 
-const chessService = new ChessService();
+import PoolService from './services/poolService.js';
+import GamesService from './services/gamesService.js';
+import ChessService from './services/ChessService.js';
 
-function matchUsers() {
-    if (pool.length >= 2) {
-        const user1 = pool.shift();
-        const user2 = pool.shift();
-
-        if (!user1 || !user2) return;
-
-        const chessboard = chessService.initilizeChessboard(user1, user2);
-        const game: Game = new Game(user1, user2, chessboard);
-        games.push(game);
-
-        io.to(user1.getSocketId()).emit(Events.MATCH_FOUND);
-        io.to(user2.getSocketId()).emit(Events.MATCH_FOUND);
-    }
-}
-
-function removeFromPool(socketId: string) {
-    const index = pool.findIndex(user => user.getSocketId() === socketId);
-    if (index !== -1) {
-        pool.splice(index, 1);
-    }
-    io.to(socketId).emit(Events.REMOVED_FROM_POOL);
-}
-
-function getGameState(socketId: string) {
-    const game = games.find(game => game.getUser1().getSocketId() === socketId || game.getUser2().getSocketId() === socketId);
-    if (game) {
-        io.to(socketId).emit(Events.GAME_STATE, game.getClientGame());
-    }
-}
+const poolService = PoolService.getInstance();
+const gamesService = GamesService.getInstance();
+const chessService = ChessService.getInstance();
 
 const rootPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 
@@ -119,24 +93,33 @@ const httpServer = createServer((req, res) => {
     serveFile(pathname, res);
 });
 
-const pool: User[] = [];
-const games: Game[] = [];
-
 const io = new Server(httpServer);
 
 io.on("connection", (socket) => {
-    socket.on(Events.MATCH, (arg) => {
-        const user: User = new User(arg.username, socket.id);
-        pool.push(user);
-        matchUsers();
+
+    socket.on(Events.MATCH, (username: string) => {
+        const addResult = poolService.addUser(username, socket.id);
+        if (addResult) {
+            const matchResult = gamesService.matchUsers();
+            if (matchResult) {
+                io.to(matchResult.getUser1().getSocketId()).emit(Events.MATCH_FOUND);
+                io.to(matchResult.getUser2().getSocketId()).emit(Events.MATCH_FOUND);
+            }
+        }
     });
 
     socket.on(Events.REMOVE_FROM_POOL, () => {
-        removeFromPool(socket.id);
+        const result = poolService.removeUser(socket.id);
+        if (result) {
+            io.to(socket.id).emit(Events.REMOVED_FROM_POOL);
+        }
     })
 
     socket.on(Events.GET_GAME_STATE, () => {
-        getGameState(socket.id);
+        const result = gamesService.getGameState(socket.id);
+        if (result) {
+            io.to(socket.id).emit(Events.GAME_STATE, result);
+        }
     });
 
     socket.on(Events.UPDATE_GAME_STATE, (move: Move) => {

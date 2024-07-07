@@ -3,6 +3,14 @@ import { PlayerColor } from "../../../shared/src/enums/PlayerColor.js";
 import { MovementStrategy } from "../../../shared/src/enums/MovementStrategy.js";
 import ChessboardCell from "../models/ChessboardCell.js";
 export default class ChessService {
+    static instance;
+    constructor() { }
+    static getInstance() {
+        if (!ChessService.instance) {
+            ChessService.instance = new ChessService();
+        }
+        return ChessService.instance;
+    }
     initilizeChessboard(user1, user2) {
         user1.setColor(PlayerColor.Light);
         user2.setColor(PlayerColor.Dark);

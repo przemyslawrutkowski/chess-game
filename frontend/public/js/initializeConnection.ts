@@ -27,7 +27,7 @@ export default function startInit(onSuccess: () => void) {
                 if (!usernameForm.getUsernameInput()) return;
 
                 //wysylamy zadanie do serwera
-                socket.emit(Events.MATCH, { username: usernameForm.getUsernameInput() });
+                socket.emit(Events.MATCH, usernameForm.getUsernameInput());
 
                 //zmieniamy status przycisku
                 buttonStatus = 'Disconnect';

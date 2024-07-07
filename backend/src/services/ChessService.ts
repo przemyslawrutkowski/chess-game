@@ -6,6 +6,17 @@ import { Chessboard } from "../types/Chessboard.js";
 import ChessboardCell from "../models/ChessboardCell.js";
 
 export default class ChessService {
+    private static instance: ChessService;
+
+    private constructor() { }
+
+    public static getInstance(): ChessService {
+        if (!ChessService.instance) {
+            ChessService.instance = new ChessService();
+        }
+        return ChessService.instance;
+    }
+
     initilizeChessboard(user1: ServerUser, user2: ServerUser): Chessboard {
         user1.setColor(PlayerColor.Light);
         user2.setColor(PlayerColor.Dark);
