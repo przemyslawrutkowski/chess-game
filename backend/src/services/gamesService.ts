@@ -2,7 +2,6 @@ import GamesRepository from "../repositories/gamesRepository.js";
 import PoolService from "../services/poolService.js";
 import ServerGame from "../models/ServerGame.js";
 import ChessService from "../services/ChessService.js";
-import ClientGame from "../models/ClientGame.js";
 
 export default class GamesService {
     private static instance: GamesService;
@@ -38,11 +37,9 @@ export default class GamesService {
         return null;
     }
 
-    public getGameState(socketId: string): ClientGame | null {
+    public getGameState(socketId: string): ServerGame | null {
         const game = this.gamesRepository.getGameState(socketId);
-        if (game) {
-            return game.getClientGame();
-        }
+        if (game) return game;
         return null;
     }
 }

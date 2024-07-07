@@ -1,7 +1,3 @@
-import ServerUser from "./ServerUser.js";
-import ChessPiece from "./ChessPiece.js";
-import ClientGame from "./ClientGame.js";
-import ChessboardCell from "./ChessboardCell.js";
 export default class ServerGame {
     user1;
     user2;
@@ -35,16 +31,27 @@ export default class ServerGame {
         const clientUser2 = this.user2.getClientUser();
         const clientChessboard = this.chessboard.map(row => row.map(cell => {
             const chessPiece = cell.getChessPiece();
+            let chessPieceDTO = null;
             if (chessPiece) {
                 const owner = chessPiece.getUser();
-                if (owner instanceof ServerUser) {
-                    const clientChessPiece = new ChessPiece(owner.getClientUser(), chessPiece.getMovementStrategy());
-                    return new ChessboardCell(cell.getXPosition(), cell.getYPosition(), clientChessPiece);
-                }
+                chessPieceDTO = {
+                    id: chessPiece.getId(),
+                    user: owner.getClientUser(),
+                    movementStrategy: chessPiece.getMovementStrategy()
+                };
             }
-            return new ChessboardCell(cell.getXPosition(), cell.getYPosition(), null);
+            return {
+                xPosition: cell.getXPosition(),
+                yPosition: cell.getYPosition(),
+                chessPiece: chessPieceDTO
+            };
         }));
         const whoseTurn = this.whoseTurn.getClientUser();
-        return new ClientGame(clientUser1, clientUser2, clientChessboard, whoseTurn);
+        return {
+            user1: clientUser1,
+            user2: clientUser2,
+            chessboard: clientChessboard,
+            whoseTurn: whoseTurn
+        };
     }
 }

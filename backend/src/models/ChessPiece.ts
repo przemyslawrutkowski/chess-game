@@ -1,14 +1,13 @@
 import { MovementStrategy } from "../../../shared/src/enums/MovementStrategy.js";
 import ServerUser from "./ServerUser.js";
-import ClientUser from "./ClientUser.js";
 import crypto from 'crypto';
 
 export default class ChessPiece {
     private id: string;
-    private user: ServerUser | ClientUser;
+    private user: ServerUser;
     private movementStrategy: MovementStrategy;
 
-    constructor(user: ServerUser | ClientUser, movementStrategy: MovementStrategy) {
+    constructor(user: ServerUser, movementStrategy: MovementStrategy) {
         this.user = user;
         this.movementStrategy = movementStrategy;
         this.id = crypto.randomUUID();
@@ -18,7 +17,7 @@ export default class ChessPiece {
         return this.id;
     }
 
-    public getUser(): ServerUser | ClientUser {
+    public getUser(): ServerUser {
         return this.user;
     }
 

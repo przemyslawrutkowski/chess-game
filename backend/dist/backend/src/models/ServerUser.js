@@ -1,4 +1,3 @@
-import ClientUser from "./ClientUser.js";
 export default class ServerUser {
     socketId;
     username;
@@ -20,6 +19,6 @@ export default class ServerUser {
         this.color = color;
     }
     getClientUser() {
-        return new ClientUser(this.username, this.color);
+        return { username: this.username, color: this.color };
     }
 }

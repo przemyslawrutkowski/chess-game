@@ -87,7 +87,7 @@ export default class ChessPieceC extends HTMLElement {
                     if (event.dataTransfer) {
                         const moveData = {
                             chessPieceId: this.chessPiece.getId(),
-                            position: position
+                            position: { x: position.getX(), y: position.getY() }
                         };
                         event.dataTransfer.setData('application/json', JSON.stringify(moveData));
                         event.dataTransfer.effectAllowed = 'move';

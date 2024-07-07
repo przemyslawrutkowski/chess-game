@@ -3,10 +3,7 @@ import { Server } from 'socket.io';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
-import User from './models/ServerUser.js';
-import Game from './models/ServerGame.js';
 import Events from '../../shared/src/events/Events.js';
-import Position from '../../shared/src/models/Position.js';
 import Move from '../../shared/src/models/Move.js';
 
 import PoolService from './services/poolService.js';
@@ -39,7 +36,8 @@ const pathMappings = new Map<string, string>([
 const pathMappingsShared = new Map<string, string>([
     ['/enums', path.join(rootPath, 'frontend/dist/shared/src/enums')],
     ['/events', path.join(rootPath, 'frontend/dist/shared/src/events')],
-    ['/models', path.join(rootPath, 'frontend/dist/shared/src/models')]
+    ['/models', path.join(rootPath, 'frontend/dist/shared/src/models')],
+    ['/interfaces', path.join(rootPath, 'frontend/dist/shared/src/interfaces')]
 ]);
 
 
@@ -118,7 +116,7 @@ io.on("connection", (socket) => {
     socket.on(Events.GET_GAME_STATE, () => {
         const result = gamesService.getGameState(socket.id);
         if (result) {
-            io.to(socket.id).emit(Events.GAME_STATE, result);
+            io.to(socket.id).emit(Events.GAME_STATE, result.getClientGame());
         }
     });
 

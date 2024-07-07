@@ -2,7 +2,6 @@ import globalStyle from '../js/globalStyles.js';
 import SocketConnection from '../../src/models/SocketConnection.js';
 import Events from '../../../shared/src/events/Events.js';
 import Position from '../../../shared/src/models/Position.js';
-import Move from '../../../shared/src/models/Move.js';
 const template = document.createElement('template');
 template.innerHTML = `
     <style>
@@ -70,8 +69,8 @@ export default class ChessboardCellC extends HTMLElement {
             const moveDataJson = event.dataTransfer.getData('application/json');
             const moveData = JSON.parse(moveDataJson);
             const oldPosition = moveData.position;
-            const newPostition = new Position(this.getXPosition(), this.getYPosition());
-            const move = new Move(moveData.chessPieceId, oldPosition, newPostition);
+            const newPostition = { x: this.getXPosition(), y: this.getYPosition() };
+            const move = { chessPieceId: moveData.chessPieceId, oldPosition: oldPosition, newPosition: newPostition };
             this.socket.emit(Events.UPDATE_GAME_STATE, move);
         }
     }

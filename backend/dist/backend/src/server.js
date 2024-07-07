@@ -27,7 +27,8 @@ const pathMappings = new Map([
 const pathMappingsShared = new Map([
     ['/enums', path.join(rootPath, 'frontend/dist/shared/src/enums')],
     ['/events', path.join(rootPath, 'frontend/dist/shared/src/events')],
-    ['/models', path.join(rootPath, 'frontend/dist/shared/src/models')]
+    ['/models', path.join(rootPath, 'frontend/dist/shared/src/models')],
+    ['/interfaces', path.join(rootPath, 'frontend/dist/shared/src/interfaces')]
 ]);
 const serveFile = (pathname, res) => {
     let filePath = '';
@@ -81,10 +82,8 @@ const io = new Server(httpServer);
 io.on("connection", (socket) => {
     socket.on(Events.MATCH, (username) => {
         const addResult = poolService.addUser(username, socket.id);
-        console.log(`Add result: ${addResult}`);
         if (addResult) {
             const matchResult = gamesService.matchUsers();
-            console.log(`Match result: ${matchResult}`);
             if (matchResult) {
                 io.to(matchResult.getUser1().getSocketId()).emit(Events.MATCH_FOUND);
                 io.to(matchResult.getUser2().getSocketId()).emit(Events.MATCH_FOUND);
@@ -100,7 +99,7 @@ io.on("connection", (socket) => {
     socket.on(Events.GET_GAME_STATE, () => {
         const result = gamesService.getGameState(socket.id);
         if (result) {
-            io.to(socket.id).emit(Events.GAME_STATE, result);
+            io.to(socket.id).emit(Events.GAME_STATE, result.getClientGame());
         }
     });
     socket.on(Events.UPDATE_GAME_STATE, (move) => {

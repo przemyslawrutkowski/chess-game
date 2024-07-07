@@ -1,5 +1,5 @@
 import { PlayerColor } from "../../../shared/src/enums/PlayerColor.js";
-import ClientUser from "./ClientUser.js";
+import { UserDTO } from "../../../shared/src/interfaces/DTO.js";
 
 export default class ServerUser {
     private socketId: string;
@@ -27,7 +27,7 @@ export default class ServerUser {
         this.color = color;
     }
 
-    getClientUser(): ClientUser {
-        return new ClientUser(this.username, this.color);
+    getClientUser(): UserDTO {
+        return { username: this.username, color: this.color! };
     }
 }

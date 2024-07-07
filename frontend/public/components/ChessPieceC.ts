@@ -3,7 +3,7 @@ import { PlayerColor } from '../../../shared/src/enums/PlayerColor.js';
 import { MovementStrategy } from '../../../shared/src/enums/MovementStrategy.js';
 import ChessPiece from '../../src/models/ChessPiece.js';
 import Position from '../../../shared/src/models/Position.js';
-import { MoveDTO } from '../../src/interfaces/DTO.js';
+import { MoveInitiationDTO } from '../../../shared/src/interfaces/DTO.js';
 
 const template = document.createElement('template');
 template.innerHTML = `
@@ -91,10 +91,9 @@ export default class ChessPieceC extends HTMLElement {
             detail: {
                 callback: (position: Position) => {
                     if (event.dataTransfer) {
-                        const moveData: MoveDTO = {
+                        const moveData: MoveInitiationDTO = {
                             chessPieceId: this.chessPiece.getId(),
-                            position: position
-
+                            position: { x: position.getX(), y: position.getY() }
                         };
                         event.dataTransfer.setData('application/json', JSON.stringify(moveData));
                         event.dataTransfer.effectAllowed = 'move';

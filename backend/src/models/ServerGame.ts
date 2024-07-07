@@ -1,15 +1,13 @@
 import ServerUser from "./ServerUser.js";
-import ChessPiece from "./ChessPiece.js";
-import ClientGame from "./ClientGame.js";
+import { GameDTO, ChessboardDTO, ChessPieceDTO } from "../../../shared/src/interfaces/DTO.js";
 import { Chessboard } from "../types/Chessboard.js";
-import ChessboardCell from "./ChessboardCell.js";
 
 export default class ServerGame {
     private user1: ServerUser;
     private user2: ServerUser;
     private chessboard: Chessboard;
     private whoseTurn: ServerUser;
-    private clientGame: ClientGame;
+    private clientGame: GameDTO;
 
     constructor(user1: ServerUser, user2: ServerUser, chessboard: Chessboard) {
         this.user1 = user1;
@@ -35,27 +33,38 @@ export default class ServerGame {
         return this.whoseTurn;
     }
 
-    public getClientGame(): ClientGame {
+    public getClientGame(): GameDTO {
         return this.clientGame;
     }
 
-    private setClientGame(): ClientGame {
+    private setClientGame(): GameDTO {
         const clientUser1 = this.user1.getClientUser();
         const clientUser2 = this.user2.getClientUser();
-        const clientChessboard = this.chessboard.map(row =>
+        const clientChessboard: ChessboardDTO = this.chessboard.map(row =>
             row.map(cell => {
                 const chessPiece = cell.getChessPiece();
+                let chessPieceDTO: ChessPieceDTO | null = null;
                 if (chessPiece) {
                     const owner = chessPiece.getUser();
-                    if (owner instanceof ServerUser) {
-                        const clientChessPiece = new ChessPiece(owner.getClientUser(), chessPiece.getMovementStrategy());
-                        return new ChessboardCell(cell.getXPosition(), cell.getYPosition(), clientChessPiece);
-                    }
+                    chessPieceDTO = {
+                        id: chessPiece.getId(),
+                        user: owner.getClientUser(),
+                        movementStrategy: chessPiece.getMovementStrategy()
+                    };
                 }
-                return new ChessboardCell(cell.getXPosition(), cell.getYPosition(), null);
+                return {
+                    xPosition: cell.getXPosition(),
+                    yPosition: cell.getYPosition(),
+                    chessPiece: chessPieceDTO
+                };
             })
         );
         const whoseTurn = this.whoseTurn.getClientUser();
-        return new ClientGame(clientUser1, clientUser2, clientChessboard, whoseTurn);
+        return {
+            user1: clientUser1,
+            user2: clientUser2,
+            chessboard: clientChessboard,
+            whoseTurn: whoseTurn
+        };
     }
 }

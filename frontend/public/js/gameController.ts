@@ -1,7 +1,7 @@
 import Events from '../../../shared/src/events/Events.js';
 import ClientGame from '../../src/models/ClientGame.js';
 import SocketConnection from '../../src/models/SocketConnection.js';
-import { GameDTO, UserDTO, ChessboardDTO } from '../../src/interfaces/DTO.js';
+import { GameDTO, UserDTO, ChessboardDTO } from '../../../shared/src/interfaces/DTO.js';
 import ClientUser from '../../src/models/ClientUser.js';
 import ChessPiece from '../../src/models/ChessPiece.js';
 import ChessboardCell from '../../src/models/ChessboardCell.js';

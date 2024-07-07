@@ -24,7 +24,6 @@ export default class GamesService {
             return null;
         const user1 = this.poolService.shiftUser();
         const user2 = this.poolService.shiftUser();
-        console.log(`Ids: `, user1?.getSocketId(), user2?.getSocketId());
         if (user1 && user2) {
             const chessboard = this.chessService.initilizeChessboard(user1, user2);
             const game = new ServerGame(user1, user2, chessboard);
@@ -36,9 +35,8 @@ export default class GamesService {
     }
     getGameState(socketId) {
         const game = this.gamesRepository.getGameState(socketId);
-        if (game) {
-            return game.getClientGame();
-        }
+        if (game)
+            return game;
         return null;
     }
 }
