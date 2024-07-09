@@ -2,6 +2,8 @@ import ChessPiece from "../models/ChessPiece.js";
 import { PlayerColor } from "../../../shared/src/enums/PlayerColor.js";
 import { MovementStrategy } from "../../../shared/src/enums/MovementStrategy.js";
 import ChessboardCell from "../models/ChessboardCell.js";
+import { MoveType } from "../../../shared/src/enums/MoveType.js";
+import ChessMoveOutCome from "../models/ChessMoveOutcome.js";
 export default class ChessService {
     static instance;
     constructor() { }
@@ -49,5 +51,46 @@ export default class ChessService {
     }
     getPossibleMoves(chessPiece, chessboard) {
         return [];
+    }
+    isTargetPositionOccupiedBySamePlayer(socketId, newPosition, chessboard) {
+        const targetCell = chessboard[newPosition.getX()][newPosition.getY()];
+        const targetPiece = targetCell.getChessPiece();
+        if (targetPiece) {
+            return targetPiece.getUser().getSocketId() === socketId;
+        }
+        return false;
+    }
+    moveChessPiece(move, chessboard) {
+        const oldPosition = move.getOldPosition();
+        const newPosition = move.getNewPosition();
+        const oldCell = chessboard[oldPosition.getX()][oldPosition.getY()];
+        const newCell = chessboard[newPosition.getX()][newPosition.getY()];
+        const chessPieceOldPosition = oldCell.getChessPiece();
+        const chessPieceNewPosition = newCell.getChessPiece();
+        const moveType = chessPieceNewPosition ? MoveType.Capture : MoveType.Move;
+        const scoreIncrease = this.calculateScoreIncreaseForCapture(chessPieceNewPosition);
+        const capturedPieceId = chessPieceNewPosition ? chessPieceNewPosition.getId() : undefined;
+        const result = new ChessMoveOutCome(moveType, scoreIncrease, capturedPieceId);
+        oldCell.setChessPiece(null);
+        newCell.setChessPiece(chessPieceOldPosition);
+        return result;
+    }
+    calculateScoreIncreaseForCapture(chessPiece) {
+        if (!chessPiece)
+            return 0;
+        const movementStrategy = chessPiece.getMovementStrategy();
+        switch (movementStrategy) {
+            case MovementStrategy.PawnMovement:
+                return 1;
+            case MovementStrategy.KnightMovement:
+            case MovementStrategy.BishopMovement:
+                return 3;
+            case MovementStrategy.RookMovement:
+                return 5;
+            case MovementStrategy.QueenMovement:
+                return 9;
+            default:
+                return 0;
+        }
     }
 }

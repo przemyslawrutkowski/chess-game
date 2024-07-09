@@ -34,16 +34,17 @@ template.innerHTML = `
 `;
 export default class ChessboardCellC extends HTMLElement {
     cell;
-    chessboardCell;
+    chessPiece = null;
+    xPosition;
+    yPosition;
     socket;
     constructor(chessboardCell) {
         super();
         const clone = template.content.cloneNode(true);
         this.cell = clone.querySelector('.cell');
-        this.chessboardCell = chessboardCell;
-        const xPosition = chessboardCell.getXPosition();
-        const yPosition = chessboardCell.getYPosition();
-        this.cell.classList.add((xPosition + yPosition) % 2 === 0 ? 'chess-field-light' : 'chess-field-dark');
+        this.xPosition = chessboardCell.getXPosition();
+        this.yPosition = chessboardCell.getYPosition();
+        this.cell.classList.add((this.xPosition + this.yPosition) % 2 === 0 ? 'chess-field-light' : 'chess-field-dark');
         const shadowRoot = this.attachShadow({ mode: 'open' });
         shadowRoot.appendChild(clone);
         shadowRoot.adoptedStyleSheets = [globalStyle];
@@ -75,19 +76,21 @@ export default class ChessboardCellC extends HTMLElement {
         }
     }
     setChessPiece(chessPiece) {
+        this.chessPiece = chessPiece;
         this.cell.appendChild(chessPiece);
     }
     unsetChessPiece() {
         this.cell.innerHTML = '';
+        this.chessPiece = null;
     }
     getChessPiece() {
-        return this.cell.querySelector('chess-piece');
+        return this.chessPiece;
     }
     getXPosition() {
-        return this.chessboardCell.getXPosition();
+        return this.xPosition;
     }
     getYPosition() {
-        return this.chessboardCell.getYPosition();
+        return this.yPosition;
     }
 }
 customElements.define('chessboard-cell', ChessboardCellC);

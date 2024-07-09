@@ -1,36 +1,9 @@
 import Events from '../../../shared/src/events/Events.js';
-import ClientGame from '../../src/models/ClientGame.js';
 import SocketConnection from '../../src/models/SocketConnection.js';
-import { GameDTO, UserDTO, ChessboardDTO } from '../../../shared/src/interfaces/DTO.js';
-import ClientUser from '../../src/models/ClientUser.js';
-import ChessPiece from '../../src/models/ChessPiece.js';
-import ChessboardCell from '../../src/models/ChessboardCell.js';
+import { GameDTO, MoveResultDTO } from '../../../shared/src/interfaces/DTO.js';
 import InfoPanelC from '../components/InfoPanelC.js';
 import ChessboardPanelC from '../components/ChessboardPanelC.js';
-
-function reconstructGame(game: GameDTO): ClientGame {
-    const user1: UserDTO = game.user1;
-    const user2: UserDTO = game.user2;
-    const chessboard: ChessboardDTO = game.chessboard;
-    const whoseTurn: UserDTO = game.whoseTurn;
-
-    const reconstructedUser1 = new ClientUser(user1.username, user1.color);
-    const reconstructedUser2 = new ClientUser(user2.username, user2.color);
-    const reconstructedChessboard = chessboard.map(row =>
-        row.map(cell => {
-            const chessPiece = cell.chessPiece;
-            if (chessPiece) {
-                const owner = chessPiece.user;
-                const reconstructedOwner = new ClientUser(owner.username, owner.color);
-                const reconstructedChessPiece = new ChessPiece(chessPiece.id, reconstructedOwner, chessPiece.movementStrategy);
-                return new ChessboardCell(cell.xPosition, cell.yPosition, reconstructedChessPiece);
-            }
-            return new ChessboardCell(cell.xPosition, cell.yPosition, null);
-        })
-    );
-    const reconstructedWhoseTurn = new ClientUser(whoseTurn.username, whoseTurn.color);
-    return new ClientGame(reconstructedUser1, reconstructedUser2, reconstructedChessboard, reconstructedWhoseTurn);
-}
+import { reconstructGame, reconstructMoveResult } from '../../src/utils/reconstructor.js';
 
 export default function gameController() {
     try {
@@ -57,6 +30,23 @@ export default function gameController() {
             infoPanel.setWhoseTurn(whoseUserTurn.getUsername());
 
             chessboardPanel.initialize(chessboard);
+        });
+
+        socket.on(Events.GAME_STATE_UPDATE, (moveResult: MoveResultDTO) => {
+            const reconstructedMoveResult = reconstructMoveResult(moveResult);
+            //console.log(reconstructedMoveResult);
+            //const chessPieceId = reconstructedMoveResult.getChessPieceId();
+            const oldPosition = reconstructedMoveResult.getOldPosition();
+            const newPosition = reconstructedMoveResult.getNewPosition();
+            //const moveType = reconstructedMoveResult.getMoveType();
+            const score = reconstructedMoveResult.getScore(); //used
+            const whoseTurn = reconstructedMoveResult.getWhoseTurn(); //used
+            //const capturedPieceId = reconstructedMoveResult.getCapturedPieceId();
+
+            infoPanel.setWhoseTurn(whoseTurn.getUsername());
+            infoPanel.setScore(score.getLightScore(), score.getDarkScore());
+
+            chessboardPanel.update(oldPosition, newPosition);
         });
 
     } catch (err) {

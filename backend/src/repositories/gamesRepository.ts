@@ -38,5 +38,4 @@ export default class GamesRepository {
             g.getUser2().getSocketId() === socketId
         );
     }
-
 }

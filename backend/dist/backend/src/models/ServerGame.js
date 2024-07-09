@@ -1,14 +1,18 @@
+import Score from "../../../shared/src/models/Score.js";
+import { PlayerColor } from "../../../shared/src/enums/PlayerColor.js";
 export default class ServerGame {
     user1;
     user2;
     chessboard;
     whoseTurn;
+    score;
     clientGame;
     constructor(user1, user2, chessboard) {
         this.user1 = user1;
         this.user2 = user2;
         this.chessboard = chessboard;
         this.whoseTurn = user1;
+        this.score = new Score(0, 0);
         this.clientGame = this.setClientGame();
     }
     getUser1() {
@@ -47,11 +51,24 @@ export default class ServerGame {
             };
         }));
         const whoseTurn = this.whoseTurn.getClientUser();
+        const score = this.getClientScore();
         return {
             user1: clientUser1,
             user2: clientUser2,
             chessboard: clientChessboard,
-            whoseTurn: whoseTurn
+            whoseTurn: whoseTurn,
+            score: score
         };
+    }
+    switchTurn() {
+        this.whoseTurn = this.whoseTurn === this.user1 ? this.user2 : this.user1;
+        this.clientGame = this.setClientGame();
+    }
+    getClientScore() {
+        return { lightScore: this.score.getLightScore(), darkScore: this.score.getDarkScore() };
+    }
+    increaseScore(score) {
+        this.whoseTurn.getColor() === PlayerColor.Light ? this.score.increaseLightScore(score) : this.score.increaseDarkScore(score);
+        this.clientGame = this.setClientGame();
     }
 }

@@ -125,11 +125,15 @@ template.innerHTML = `
 export default class InfoPanelC extends HTMLElement {
     opponents;
     whoseTurn;
+    lightScore;
+    darkScore;
     constructor() {
         super();
         const clone = template.content.cloneNode(true);
         this.opponents = clone.querySelectorAll('.opponent');
         this.whoseTurn = clone.querySelector('.whose-turn');
+        this.lightScore = clone.querySelector('.light-score');
+        this.darkScore = clone.querySelector('.dark-score');
         const shadowRoot = this.attachShadow({ mode: 'open' });
         shadowRoot.appendChild(clone);
         shadowRoot.adoptedStyleSheets = [globalStyle];
@@ -154,6 +158,10 @@ export default class InfoPanelC extends HTMLElement {
     }
     setWhoseTurn(username) {
         this.whoseTurn.innerText = `It's ${username} turn...`;
+    }
+    setScore(lightScore, darkScore) {
+        this.lightScore.innerText = lightScore.toString();
+        this.darkScore.innerText = darkScore.toString();
     }
 }
 customElements.define('info-panel', InfoPanelC);

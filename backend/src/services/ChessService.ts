@@ -4,6 +4,10 @@ import { PlayerColor } from "../../../shared/src/enums/PlayerColor.js";
 import { MovementStrategy } from "../../../shared/src/enums/MovementStrategy.js";
 import { Chessboard } from "../types/Chessboard.js";
 import ChessboardCell from "../models/ChessboardCell.js";
+import Move from "../../../shared/src/models/Move.js";
+import Position from "../../../shared/src/models/Position.js";
+import { MoveType } from "../../../shared/src/enums/MoveType.js";
+import ChessMoveOutCome from "../models/ChessMoveOutcome.js";
 
 export default class ChessService {
     private static instance: ChessService;
@@ -17,7 +21,7 @@ export default class ChessService {
         return ChessService.instance;
     }
 
-    initilizeChessboard(user1: ServerUser, user2: ServerUser): Chessboard {
+    public initilizeChessboard(user1: ServerUser, user2: ServerUser): Chessboard {
         user1.setColor(PlayerColor.Light);
         user2.setColor(PlayerColor.Dark);
 
@@ -62,7 +66,59 @@ export default class ChessService {
         return chessboard;
     }
 
-    getPossibleMoves(chessPiece: ChessPiece, chessboard: Chessboard): Array<Array<number>> {
+    public getPossibleMoves(chessPiece: ChessPiece, chessboard: Chessboard): Array<Array<number>> {
         return [];
+    }
+
+    public isTargetPositionOccupiedBySamePlayer(socketId: string, newPosition: Position, chessboard: Chessboard): boolean {
+        const targetCell = chessboard[newPosition.getX()][newPosition.getY()];
+        const targetPiece = targetCell.getChessPiece();
+
+        if (targetPiece) {
+            return targetPiece.getUser().getSocketId() === socketId;
+        }
+
+        return false;
+    }
+
+    public moveChessPiece(move: Move, chessboard: Chessboard): ChessMoveOutCome {
+        const oldPosition = move.getOldPosition();
+        const newPosition = move.getNewPosition();
+
+        const oldCell = chessboard[oldPosition.getX()][oldPosition.getY()];
+        const newCell = chessboard[newPosition.getX()][newPosition.getY()];
+
+        const chessPieceOldPosition = oldCell.getChessPiece();
+        const chessPieceNewPosition = newCell.getChessPiece();
+
+        const moveType = chessPieceNewPosition ? MoveType.Capture : MoveType.Move;
+        const scoreIncrease = this.calculateScoreIncreaseForCapture(chessPieceNewPosition);
+        const capturedPieceId = chessPieceNewPosition ? chessPieceNewPosition.getId() : undefined
+
+        const result = new ChessMoveOutCome(moveType, scoreIncrease, capturedPieceId);
+
+        oldCell.setChessPiece(null);
+        newCell.setChessPiece(chessPieceOldPosition);
+
+        return result;
+    }
+
+    private calculateScoreIncreaseForCapture(chessPiece: ChessPiece | null): number {
+        if (!chessPiece) return 0;
+
+        const movementStrategy = chessPiece.getMovementStrategy();
+        switch (movementStrategy) {
+            case MovementStrategy.PawnMovement:
+                return 1;
+            case MovementStrategy.KnightMovement:
+            case MovementStrategy.BishopMovement:
+                return 3;
+            case MovementStrategy.RookMovement:
+                return 5;
+            case MovementStrategy.QueenMovement:
+                return 9;
+            default:
+                return 0;
+        }
     }
 }

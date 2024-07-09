@@ -128,6 +128,8 @@ template.innerHTML = `
 export default class InfoPanelC extends HTMLElement {
     private opponents: NodeListOf<Element>;
     private whoseTurn: HTMLParagraphElement;
+    private lightScore: HTMLParagraphElement;
+    private darkScore: HTMLParagraphElement;
 
 
     constructor() {
@@ -135,12 +137,14 @@ export default class InfoPanelC extends HTMLElement {
         const clone = template.content.cloneNode(true) as DocumentFragment;
         this.opponents = clone.querySelectorAll('.opponent') as NodeListOf<HTMLDivElement>;
         this.whoseTurn = clone.querySelector('.whose-turn') as HTMLParagraphElement;
+        this.lightScore = clone.querySelector('.light-score') as HTMLParagraphElement;
+        this.darkScore = clone.querySelector('.dark-score') as HTMLParagraphElement;
         const shadowRoot = this.attachShadow({ mode: 'open' });
         shadowRoot.appendChild(clone);
         shadowRoot.adoptedStyleSheets = [globalStyle];
     }
 
-    initialize(user1: ClientUser, user2: ClientUser) {
+    public initialize(user1: ClientUser, user2: ClientUser) {
         const opponent1 = this.opponents.item(0) as HTMLDivElement;
         const opponent2 = this.opponents.item(1) as HTMLDivElement;
 
@@ -163,8 +167,13 @@ export default class InfoPanelC extends HTMLElement {
         opponent2Username.innerText = user2.getUsername();
     }
 
-    setWhoseTurn(username: string) {
+    public setWhoseTurn(username: string) {
         this.whoseTurn.innerText = `It's ${username} turn...`;
+    }
+
+    public setScore(lightScore: number, darkScore: number) {
+        this.lightScore.innerText = lightScore.toString();
+        this.darkScore.innerText = darkScore.toString();
     }
 }
 

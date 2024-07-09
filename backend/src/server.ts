@@ -4,15 +4,12 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import Events from '../../shared/src/events/Events.js';
-import Move from '../../shared/src/models/Move.js';
-
+import { MoveDTO } from '../../shared/src/interfaces/DTO.js';
 import PoolService from './services/poolService.js';
 import GamesService from './services/gamesService.js';
-import ChessService from './services/ChessService.js';
 
 const poolService = PoolService.getInstance();
 const gamesService = GamesService.getInstance();
-const chessService = ChessService.getInstance();
 
 const rootPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 
@@ -28,6 +25,7 @@ const pathMappings = new Map<string, string>([
     ['/interfaces', path.join(rootPath, 'frontend/dist/frontend/src/interfaces')],
     ['/models', path.join(rootPath, 'frontend/dist/frontend/src/models')],
     ['/types', path.join(rootPath, 'frontend/dist/frontend/src/types')],
+    ['/utils', path.join(rootPath, 'frontend/dist/frontend/src/utils')],
 
     ['/components', path.join(rootPath, 'frontend/dist/frontend/public/components')],
     ['/js', path.join(rootPath, 'frontend/dist/frontend/public/js')],
@@ -120,8 +118,13 @@ io.on("connection", (socket) => {
         }
     });
 
-    socket.on(Events.UPDATE_GAME_STATE, (move: Move) => {
-        console.log(move);
+    socket.on(Events.UPDATE_GAME_STATE, (move: MoveDTO) => {
+        const moveResult = gamesService.moveChessPiece(socket.id, move);
+        const game = gamesService.getGameState(socket.id);
+        if (moveResult && game) {
+            io.to(game.getUser1().getSocketId()).emit(Events.GAME_STATE_UPDATE, moveResult);
+            io.to(game.getUser2().getSocketId()).emit(Events.GAME_STATE_UPDATE, moveResult);
+        }
     });
 });
 

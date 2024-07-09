@@ -6,8 +6,8 @@ template.innerHTML = `
     <style>
         .chessboard-panel {
             display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            grid-template-rows: repeat(8, 1fr);
+            grid-template-columns: repeat(8, minmax(0, 1fr));
+            grid-template-rows: repeat(8, minmax(0, 1fr));
             max-width: 600px;
             max-height: 600px;
         }
@@ -15,8 +15,6 @@ template.innerHTML = `
         chessboard-cell {
             position: relative;
             z-index: 1000;
-            width: 100%;
-            height: 100%;
         }
     </style>
 
@@ -44,6 +42,30 @@ export default class ChessboardPanelC extends HTMLElement {
                 }
                 this.chessboard.appendChild(chessboardCellC);
             }
+        }
+    }
+    update(oldPosition, newPosition) {
+        let oldCell = null;
+        let newCell = null;
+        const cells = Array.from(this.chessboard.children);
+        cells.forEach(cell => {
+            const xPosition = cell.getXPosition();
+            const yPosition = cell.getYPosition();
+            if (oldPosition.getX() === xPosition && oldPosition.getY() === yPosition) {
+                oldCell = cell;
+            }
+            else if (newPosition.getX() === xPosition && newPosition.getY() === yPosition) {
+                newCell = cell;
+            }
+        });
+        let chessPiece = null;
+        if (oldCell !== null) {
+            chessPiece = oldCell.getChessPiece();
+            oldCell.unsetChessPiece();
+        }
+        if (newCell !== null && chessPiece !== null) {
+            newCell.unsetChessPiece();
+            newCell.setChessPiece(chessPiece);
         }
     }
 }

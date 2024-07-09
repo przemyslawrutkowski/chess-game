@@ -2,14 +2,15 @@ import globalStyle from '../js/globalStyles.js';
 import { Chessboard } from '../../src/types/Chessboard.js';
 import ChessPieceC from './ChessPieceC.js';
 import ChessboardCellC from './ChessboardCellC.js';
+import Position from '../../../shared/src/models/Position.js';
 
 const template = document.createElement('template');
 template.innerHTML = `
     <style>
         .chessboard-panel {
             display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            grid-template-rows: repeat(8, 1fr);
+            grid-template-columns: repeat(8, minmax(0, 1fr));
+            grid-template-rows: repeat(8, minmax(0, 1fr));
             max-width: 600px;
             max-height: 600px;
         }
@@ -17,8 +18,6 @@ template.innerHTML = `
         chessboard-cell {
             position: relative;
             z-index: 1000;
-            width: 100%;
-            height: 100%;
         }
     </style>
 
@@ -37,7 +36,7 @@ export default class ChessboardPanelC extends HTMLElement {
         shadowRoot.adoptedStyleSheets = [globalStyle];
     }
 
-    initialize(chessboard: Chessboard) {
+    public initialize(chessboard: Chessboard) {
         for (let x = 0; x < 8; x++) {
             for (let y = 0; y < 8; y++) {
                 const chessboardCell = chessboard[x][y];
@@ -52,6 +51,36 @@ export default class ChessboardPanelC extends HTMLElement {
             }
         }
     }
+
+    public update(oldPosition: Position, newPosition: Position) {
+        let oldCell: ChessboardCellC | null = null;
+        let newCell: ChessboardCellC | null = null;
+
+        const cells = Array.from(this.chessboard.children) as ChessboardCellC[];
+
+        cells.forEach(cell => {
+            const xPosition = cell.getXPosition();
+            const yPosition = cell.getYPosition();
+            if (oldPosition.getX() === xPosition && oldPosition.getY() === yPosition) {
+                oldCell = cell;
+            } else if (newPosition.getX() === xPosition && newPosition.getY() === yPosition) {
+                newCell = cell;
+            }
+        });
+
+        let chessPiece: ChessPieceC | null = null;
+
+        if (oldCell !== null) {
+            chessPiece = (oldCell as ChessboardCellC).getChessPiece();
+            (oldCell as ChessboardCellC).unsetChessPiece();
+        }
+
+        if (newCell !== null && chessPiece !== null) {
+            (newCell as ChessboardCellC).unsetChessPiece();
+            (newCell as ChessboardCellC).setChessPiece(chessPiece);
+        }
+    }
+
 }
 
 customElements.define('chessboard-panel', ChessboardPanelC);

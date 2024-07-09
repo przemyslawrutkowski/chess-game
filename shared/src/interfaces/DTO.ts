@@ -1,6 +1,5 @@
 import { MovementStrategy } from "../enums/MovementStrategy.js";
 import { PlayerColor } from "../enums/PlayerColor.js";
-import Position from "../models/Position.js";
 import { MoveType } from "../enums/MoveType.js";
 
 export interface GameDTO {
@@ -8,6 +7,7 @@ export interface GameDTO {
     user2: UserDTO;
     chessboard: ChessboardDTO;
     whoseTurn: UserDTO;
+    score: ScoreDTO;
 }
 
 export interface UserDTO {
@@ -34,9 +34,11 @@ export interface MoveInitiationDTO {
 
 export interface MoveResultDTO {
     chessPieceId: string;
-    oldPostion: Position;
-    newPosition: [number, number];
+    oldPostion: PositionDTO;
+    newPosition: PositionDTO;
     moveType: MoveType;
+    score: ScoreDTO;
+    whoseTurn: UserDTO;
     capturedPieceId?: string;
 }
 
@@ -49,6 +51,11 @@ export interface MoveDTO {
     chessPieceId: string;
     oldPosition: PositionDTO;
     newPosition: PositionDTO;
+}
+
+export interface ScoreDTO {
+    lightScore: number;
+    darkScore: number;
 }
 
 export type ChessboardDTO = Array<Array<ChessboardCellDTO>>;

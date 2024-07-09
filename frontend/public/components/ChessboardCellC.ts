@@ -4,7 +4,6 @@ import ChessboardCell from '../../src/models/ChessboardCell.js';
 import SocketConnection from '../../src/models/SocketConnection.js';
 import Events from '../../../shared/src/events/Events.js';
 import Position from '../../../shared/src/models/Position.js';
-import Move from '../../../shared/src/models/Move.js';
 import { MoveDTO, MoveInitiationDTO, PositionDTO } from '../../../shared/src/interfaces/DTO.js';
 
 const template = document.createElement('template');
@@ -40,7 +39,9 @@ template.innerHTML = `
 
 export default class ChessboardCellC extends HTMLElement {
     private cell: HTMLDivElement;
-    private chessboardCell: ChessboardCell;
+    private chessPiece: ChessPieceC | null = null;
+    private xPosition: number;
+    private yPosition: number;
     private socket: any;
 
     constructor(chessboardCell: ChessboardCell) {
@@ -48,10 +49,9 @@ export default class ChessboardCellC extends HTMLElement {
         const clone = template.content.cloneNode(true) as DocumentFragment;
         this.cell = clone.querySelector('.cell') as HTMLDivElement;
 
-        this.chessboardCell = chessboardCell;
-        const xPosition = chessboardCell.getXPosition();
-        const yPosition = chessboardCell.getYPosition();
-        this.cell.classList.add((xPosition + yPosition) % 2 === 0 ? 'chess-field-light' : 'chess-field-dark');
+        this.xPosition = chessboardCell.getXPosition();
+        this.yPosition = chessboardCell.getYPosition();
+        this.cell.classList.add((this.xPosition + this.yPosition) % 2 === 0 ? 'chess-field-light' : 'chess-field-dark');
 
         const shadowRoot = this.attachShadow({ mode: 'open' });
         shadowRoot.appendChild(clone);
@@ -89,23 +89,25 @@ export default class ChessboardCellC extends HTMLElement {
     }
 
     public setChessPiece(chessPiece: ChessPieceC) {
+        this.chessPiece = chessPiece;
         this.cell.appendChild(chessPiece);
     }
 
     public unsetChessPiece() {
         this.cell.innerHTML = '';
+        this.chessPiece = null;
     }
 
     public getChessPiece() {
-        return this.cell.querySelector('chess-piece');
+        return this.chessPiece;
     }
 
     public getXPosition() {
-        return this.chessboardCell.getXPosition();
+        return this.xPosition;
     }
 
     public getYPosition() {
-        return this.chessboardCell.getYPosition();
+        return this.yPosition;
     }
 }
 

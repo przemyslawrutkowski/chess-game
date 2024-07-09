@@ -1,12 +1,15 @@
 import ServerUser from "./ServerUser.js";
-import { GameDTO, ChessboardDTO, ChessPieceDTO } from "../../../shared/src/interfaces/DTO.js";
+import { GameDTO, ChessboardDTO, ChessPieceDTO, ScoreDTO } from "../../../shared/src/interfaces/DTO.js";
 import { Chessboard } from "../types/Chessboard.js";
+import Score from "../../../shared/src/models/Score.js";
+import { PlayerColor } from "../../../shared/src/enums/PlayerColor.js";
 
 export default class ServerGame {
     private user1: ServerUser;
     private user2: ServerUser;
     private chessboard: Chessboard;
     private whoseTurn: ServerUser;
+    private score: Score;
     private clientGame: GameDTO;
 
     constructor(user1: ServerUser, user2: ServerUser, chessboard: Chessboard) {
@@ -14,7 +17,9 @@ export default class ServerGame {
         this.user2 = user2;
         this.chessboard = chessboard;
         this.whoseTurn = user1;
+        this.score = new Score(0, 0);
         this.clientGame = this.setClientGame();
+
     }
 
     public getUser1(): ServerUser {
@@ -60,11 +65,27 @@ export default class ServerGame {
             })
         );
         const whoseTurn = this.whoseTurn.getClientUser();
+        const score = this.getClientScore();
         return {
             user1: clientUser1,
             user2: clientUser2,
             chessboard: clientChessboard,
-            whoseTurn: whoseTurn
+            whoseTurn: whoseTurn,
+            score: score
         };
+    }
+
+    public switchTurn(): void {
+        this.whoseTurn = this.whoseTurn === this.user1 ? this.user2 : this.user1;
+        this.clientGame = this.setClientGame();
+    }
+
+    public getClientScore(): ScoreDTO {
+        return { lightScore: this.score.getLightScore(), darkScore: this.score.getDarkScore() };
+    }
+
+    public increaseScore(score: number): void {
+        this.whoseTurn.getColor() === PlayerColor.Light ? this.score.increaseLightScore(score) : this.score.increaseDarkScore(score);
+        this.clientGame = this.setClientGame();
     }
 }

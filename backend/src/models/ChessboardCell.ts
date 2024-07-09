@@ -23,7 +23,7 @@ export default class ChessboardCell {
         return this.chessPiece;
     }
 
-    public setChessPiece(chessPiece: ChessPiece): void {
+    public setChessPiece(chessPiece: ChessPiece | null): void {
         this.chessPiece = chessPiece;
     }
 }
