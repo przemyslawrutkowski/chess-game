@@ -80,9 +80,10 @@ export default class GamesService {
 
         const isTurnValid = this.validateTurn(socketId);
         const isOwnershipValid = this.validateOwnership(socketId, move.chessPieceId);
-        const isNewPositionValid = this.chessService.isTargetPositionOccupiedBySamePlayer(socketId, newPosition, game.getChessboard());
+        const isOccupiedBySamePlayer = this.chessService.isTargetPositionOccupiedBySamePlayer(socketId, newPosition, game.getChessboard());
+        const isMoveValid = this.chessService.isMoveValid(oldPosition, newPosition, chessboard);
 
-        if (!isTurnValid || !isOwnershipValid || isNewPositionValid) return null;
+        if (!isTurnValid || !isOwnershipValid || isOccupiedBySamePlayer || !isMoveValid) return null;
 
         const moveOutcome: ChessMoveOutCome = this.chessService.moveChessPiece(reconstructedMove, chessboard);
         game.increaseScore(moveOutcome.getScoreIncrease());
