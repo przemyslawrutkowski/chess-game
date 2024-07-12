@@ -1,6 +1,6 @@
 import { MoveType } from "../../../shared/src/enums/MoveType.js";
 
-export default class ChessMoveOutCome {
+export default class ChessMoveInfo {
     private moveType: MoveType;
     private scoreIncrease: number;
     private capturedPieceId: string | undefined;

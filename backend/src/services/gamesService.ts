@@ -5,7 +5,7 @@ import ChessService from "../services/ChessService.js";
 import Move from "../../../shared/src/models/Move.js";
 import { MoveResultDTO, MoveDTO } from "../../../shared/src/interfaces/DTO.js";
 import Position from "../../../shared/src/models/Position.js";
-import ChessMoveOutCome from "../models/ChessMoveOutcome.js";
+import ChessMoveInfo from "../models/ChessMoveInfo.js";
 
 export default class GamesService {
     private static instance: GamesService;
@@ -53,22 +53,6 @@ export default class GamesService {
         return game.getWhoseTurn().getSocketId() === socketId;
     }
 
-    private validateOwnership(socketId: string, chessPieceId: string): boolean {
-        const game = this.getGameState(socketId);
-        if (!game) return false;
-        const chessboard = game.getChessboard();
-        for (const row of chessboard) {
-            for (const cell of row) {
-                const chessPiece = cell.getChessPiece();
-                if (chessPiece && chessPiece.getId() === chessPieceId) {
-                    const owner = chessPiece.getUser();
-                    return owner.getSocketId() === socketId;
-                }
-            }
-        }
-        return false;
-    }
-
     public moveChessPiece(socketId: string, move: MoveDTO): MoveResultDTO | null {
         const game = this.getGameState(socketId);
         if (!game) return null
@@ -79,13 +63,11 @@ export default class GamesService {
         const chessboard = game.getChessboard();
 
         const isTurnValid = this.validateTurn(socketId);
-        const isOwnershipValid = this.validateOwnership(socketId, move.chessPieceId);
-        const isOccupiedBySamePlayer = this.chessService.isTargetPositionOccupiedBySamePlayer(socketId, newPosition, game.getChessboard());
-        const isMoveValid = this.chessService.isMoveValid(oldPosition, newPosition, chessboard);
+        const isMoveValid = this.chessService.isMoveValid(socketId, oldPosition, newPosition, chessboard);
 
-        if (!isTurnValid || !isOwnershipValid || isOccupiedBySamePlayer || !isMoveValid) return null;
+        if (!isTurnValid || !isMoveValid) return null;
 
-        const moveOutcome: ChessMoveOutCome = this.chessService.moveChessPiece(reconstructedMove, chessboard);
+        const moveOutcome: ChessMoveInfo = this.chessService.moveChessPiece(reconstructedMove, chessboard);
         game.increaseScore(moveOutcome.getScoreIncrease());
         game.switchTurn();
 

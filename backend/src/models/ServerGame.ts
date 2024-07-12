@@ -19,7 +19,6 @@ export default class ServerGame {
         this.whoseTurn = user1;
         this.score = new Score(0, 0);
         this.clientGame = this.setClientGame();
-
     }
 
     public getUser1(): ServerUser {

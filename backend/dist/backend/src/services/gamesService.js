@@ -47,22 +47,6 @@ export default class GamesService {
             return false;
         return game.getWhoseTurn().getSocketId() === socketId;
     }
-    validateOwnership(socketId, chessPieceId) {
-        const game = this.getGameState(socketId);
-        if (!game)
-            return false;
-        const chessboard = game.getChessboard();
-        for (const row of chessboard) {
-            for (const cell of row) {
-                const chessPiece = cell.getChessPiece();
-                if (chessPiece && chessPiece.getId() === chessPieceId) {
-                    const owner = chessPiece.getUser();
-                    return owner.getSocketId() === socketId;
-                }
-            }
-        }
-        return false;
-    }
     moveChessPiece(socketId, move) {
         const game = this.getGameState(socketId);
         if (!game)
@@ -72,10 +56,8 @@ export default class GamesService {
         const reconstructedMove = new Move(move.chessPieceId, oldPosition, newPosition);
         const chessboard = game.getChessboard();
         const isTurnValid = this.validateTurn(socketId);
-        const isOwnershipValid = this.validateOwnership(socketId, move.chessPieceId);
-        const isOccupiedBySamePlayer = this.chessService.isTargetPositionOccupiedBySamePlayer(socketId, newPosition, game.getChessboard());
-        const isMoveValid = this.chessService.isMoveValid(oldPosition, newPosition, chessboard);
-        if (!isTurnValid || !isOwnershipValid || isOccupiedBySamePlayer || !isMoveValid)
+        const isMoveValid = this.chessService.isMoveValid(socketId, oldPosition, newPosition, chessboard);
+        if (!isTurnValid || !isMoveValid)
             return null;
         const moveOutcome = this.chessService.moveChessPiece(reconstructedMove, chessboard);
         game.increaseScore(moveOutcome.getScoreIncrease());
