@@ -50,6 +50,9 @@ export default class ChessService {
         chessboard[7][4].setChessPiece(new ChessPiece(user2, MovementStrategy.KingMovement));
         return chessboard;
     }
+    isPositionValid(position) {
+        return position.getX() >= 0 && position.getX() < 8 && position.getY() >= 0 && position.getY() < 8;
+    }
     cloneChessboard(chessboard) {
         return chessboard.map(row => row.map(cell => {
             return new ChessboardCell(cell.getXPosition(), cell.getYPosition(), cell.getChessPiece());
@@ -81,54 +84,47 @@ export default class ChessService {
             return [];
         }));
     }
-    isMoveLegal(piece, oldPosition, newPosition, chessboard) {
-        const targetPiece = this.getChessPieceAtPosition(newPosition, chessboard);
-        const dx = Math.abs(newPosition.getX() - oldPosition.getX());
-        const dy = Math.abs(newPosition.getY() - oldPosition.getY());
-        switch (piece.getMovementStrategy()) {
-            case MovementStrategy.KingMovement:
-                return (dx <= 1 && dy <= 1);
-            case MovementStrategy.QueenMovement:
-                return this.isPathClear(MovementStrategy.QueenMovement, oldPosition, newPosition, chessboard) && (dx === dy || dx === 0 || dy === 0);
-            case MovementStrategy.RookMovement:
-                return this.isPathClear(MovementStrategy.RookMovement, oldPosition, newPosition, chessboard) && (dx === 0 || dy === 0);
-            case MovementStrategy.BishopMovement:
-                return this.isPathClear(MovementStrategy.BishopMovement, oldPosition, newPosition, chessboard) && (dx === dy);
-            case MovementStrategy.KnightMovement:
-                return (dx === 2 && dy === 1) || (dx === 1 && dy === 2);
-            case MovementStrategy.PawnMovement:
-                const direction = piece.getUser().getColor() === PlayerColor.Light ? 1 : -1;
-                const doubleMove = piece.getIsFirstMove() && (newPosition.getX() === oldPosition.getX() + 2 * direction) && (newPosition.getY() === oldPosition.getY()) && targetPiece === null;
-                const singleMove = (newPosition.getX() === oldPosition.getX() + direction) && (newPosition.getY() === oldPosition.getY()) && targetPiece === null;
-                const diagonalMove = (newPosition.getX() === oldPosition.getX() + direction) && ((newPosition.getY() === oldPosition.getY() + 1) || (newPosition.getY() === oldPosition.getY() - 1)) && targetPiece !== null;
-                if (singleMove || doubleMove || diagonalMove) {
-                    piece.setIsFirstMove(false);
-                }
-                return singleMove || doubleMove || diagonalMove;
-        }
-    }
     isMoveValid(socketId, oldPosition, newPosition, chessboard) {
+        if (!this.isPositionValid(oldPosition) || !this.isPositionValid(newPosition))
+            return false;
         const piece = this.getChessPieceAtPosition(oldPosition, chessboard);
         if (!piece)
             return false;
         const isOwnershipValid = this.isPositionOccupiedByPlayer(socketId, oldPosition, chessboard);
-        const isOccupiedBySamePlayer = this.isPositionOccupiedByPlayer(socketId, newPosition, chessboard);
-        const cellsOccupiedByOpponent = this.getPositionsOccupiedByOpponent(socketId, chessboard);
-        const kingPosition = this.getKingPosition(socketId, chessboard);
-        const isKingInCheck = this.isKingInCheck(kingPosition, cellsOccupiedByOpponent, chessboard);
-        if (isKingInCheck) {
-            return this.doesGetOutOfCheck(socketId, oldPosition, newPosition, cellsOccupiedByOpponent, chessboard);
-        }
-        if (!isOwnershipValid || isOccupiedBySamePlayer)
+        if (!isOwnershipValid)
             return false;
-        return this.isMoveLegal(piece, oldPosition, newPosition, chessboard);
+        const clonedChessboard = this.cloneChessboard(chessboard);
+        const isMoveLegal = this.isMoveLegal(oldPosition, newPosition, clonedChessboard, socketId);
+        if (!isMoveLegal)
+            return false;
+        const doesResultsInCheck = this.doesResultsInCheck(socketId, oldPosition, newPosition, clonedChessboard);
+        if (doesResultsInCheck)
+            return false;
+        if (piece.getMovementStrategy() === MovementStrategy.PawnMovement && piece.getIsFirstMove())
+            piece.setIsFirstMove(false);
+        return true;
     }
-    isPathClear(movementStrategy, oldPosition, newPosition, chessboard) {
+    isMoveLegal(oldPosition, newPosition, chessboard, socketId) {
         const oldX = oldPosition.getX();
         const oldY = oldPosition.getY();
         const newX = newPosition.getX();
         const newY = newPosition.getY();
+        const chessPiece = this.getChessPieceAtPosition(oldPosition, chessboard);
+        const targetPiece = this.getChessPieceAtPosition(newPosition, chessboard);
+        if (socketId) {
+            const isOccupiedBySamePlayer = this.isPositionOccupiedByPlayer(socketId, newPosition, chessboard);
+            if (isOccupiedBySamePlayer)
+                return false;
+        }
+        if (!chessPiece)
+            return false;
+        const movementStrategy = chessPiece.getMovementStrategy();
         switch (movementStrategy) {
+            case MovementStrategy.KingMovement: {
+                const dx = Math.abs(newX - oldX);
+                const dy = Math.abs(newY - oldY);
+                return (dx <= 1 && dy <= 1);
+            }
             case MovementStrategy.QueenMovement:
                 if (oldX !== newX && oldY !== newY) {
                     if (Math.abs(newX - oldX) !== Math.abs(newY - oldY))
@@ -143,8 +139,17 @@ export default class ChessService {
                 if (Math.abs(newX - oldX) !== Math.abs(newY - oldY))
                     return false;
                 break;
-            default:
-                break;
+            case MovementStrategy.KnightMovement: {
+                const dx = Math.abs(newX - oldX);
+                const dy = Math.abs(newY - oldY);
+                return (dx === 2 && dy === 1) || (dx === 1 && dy === 2);
+            }
+            case MovementStrategy.PawnMovement:
+                const direction = chessPiece.getUser().getColor() === PlayerColor.Light ? 1 : -1;
+                const doubleMove = chessPiece.getIsFirstMove() && (newPosition.getX() === oldPosition.getX() + 2 * direction) && (newPosition.getY() === oldPosition.getY()) && targetPiece === null;
+                const singleMove = (newPosition.getX() === oldPosition.getX() + direction) && (newPosition.getY() === oldPosition.getY()) && targetPiece === null;
+                const diagonalMove = (newPosition.getX() === oldPosition.getX() + direction) && ((newPosition.getY() === oldPosition.getY() + 1) || (newPosition.getY() === oldPosition.getY() - 1)) && targetPiece !== null;
+                return singleMove || doubleMove || diagonalMove;
         }
         const dx = Math.sign(newX - oldX);
         const dy = Math.sign(newY - oldY);
@@ -158,48 +163,19 @@ export default class ChessService {
         }
         return true;
     }
-    canCheck(position, kingPosition, chessboard) {
-        const piece = this.getChessPieceAtPosition(position, chessboard);
-        if (!piece)
-            throw new Error("Piece not found");
-        const dx = Math.abs(kingPosition.getX() - position.getX());
-        const dy = Math.abs(kingPosition.getY() - position.getY());
-        switch (piece.getMovementStrategy()) {
-            case MovementStrategy.KingMovement:
-                return (dx <= 1 && dy <= 1);
-            case MovementStrategy.QueenMovement:
-                return this.isPathClear(MovementStrategy.QueenMovement, position, kingPosition, chessboard) && (dx === dy || dx === 0 || dy === 0);
-            case MovementStrategy.RookMovement:
-                return this.isPathClear(MovementStrategy.RookMovement, position, kingPosition, chessboard) && (dx === 0 || dy === 0);
-            case MovementStrategy.BishopMovement:
-                return this.isPathClear(MovementStrategy.BishopMovement, position, kingPosition, chessboard) && (dx === dy);
-            case MovementStrategy.KnightMovement:
-                return (dx === 2 && dy === 1) || (dx === 1 && dy === 2);
-            case MovementStrategy.PawnMovement:
-                const direction = piece.getUser().getColor() === PlayerColor.Light ? 1 : -1;
-                const diagonalMove = (kingPosition.getX() === position.getX() + direction) && ((kingPosition.getY() === position.getY() + 1) || (kingPosition.getY() === position.getY() - 1));
-                return diagonalMove;
-        }
-    }
     isKingInCheck(kingPosition, positionsOccupiedByOpponent, chessboard) {
         for (const position of positionsOccupiedByOpponent) {
-            if (this.canCheck(position, kingPosition, chessboard)) {
+            if (this.isMoveLegal(position, kingPosition, chessboard)) {
                 return true;
             }
         }
         return false;
     }
-    doesGetOutOfCheck(socketId, oldPosition, newPosition, positionsOccupiedByOpponent, chessboard) {
-        const clonedChessboard = this.cloneChessboard(chessboard);
-        const chessPiece = this.getChessPieceAtPosition(oldPosition, clonedChessboard);
-        if (!chessPiece)
-            throw new Error("Piece not found");
-        const isMoveLegal = this.isMoveLegal(chessPiece, oldPosition, newPosition, clonedChessboard);
-        if (!isMoveLegal)
-            return false;
-        this.setChessPieceAtPosition(oldPosition, newPosition, clonedChessboard);
-        const kingPosition = this.getKingPosition(socketId, clonedChessboard);
-        return !this.isKingInCheck(kingPosition, positionsOccupiedByOpponent, clonedChessboard);
+    doesResultsInCheck(socketId, oldPosition, newPosition, chessboard) {
+        this.setChessPieceAtPosition(oldPosition, newPosition, chessboard);
+        const kingPosition = this.getKingPosition(socketId, chessboard);
+        const positionsOccupiedByOpponent = this.getPositionsOccupiedByOpponent(socketId, chessboard);
+        return this.isKingInCheck(kingPosition, positionsOccupiedByOpponent, chessboard);
     }
     getKingPosition(socketId, chessboard) {
         for (const row of chessboard) {
