@@ -205,10 +205,11 @@ export default class ChessService {
     public checkGameState(socketId: string, chessboard: Chessboard): GameState { //We need to pass a chessboard after the move has been made!!!
         const opponentKingPosition = this.getKingPosition(socketId, chessboard);
         const positionsOccupiedByMe = this.getOccupiedPositions(socketId, chessboard, true);
-        if (this.isKingInCheck(opponentKingPosition, positionsOccupiedByMe, chessboard)) return GameState.InProgress;
+
+        const isKingInCheck = this.isKingInCheck(opponentKingPosition, positionsOccupiedByMe, chessboard);
 
         //Verify does the opponent's king can do any legal move
-        //If yes -> return false
+        //If yes -> return GameState.InProgress
         //If no -> go to the next step
         const kingPossibleMoves = this.getPossibleMoves(socketId, opponentKingPosition, chessboard);
         for (const move of kingPossibleMoves) {
@@ -229,6 +230,7 @@ export default class ChessService {
             }
         }
 
+        if (isKingInCheck) return GameState.Checkmate;
         return GameState.Stalemate;
     }
 

@@ -63,6 +63,7 @@ export default class GamesService {
         game.increaseScore(scoreIncrease);
         game.switchTurn();
         const gameState = this.chessService.checkGameState(socketId, chessboard);
+        console.log(gameState);
         const moveResult = {
             oldPostion: move.oldPosition,
             newPosition: move.newPosition,
