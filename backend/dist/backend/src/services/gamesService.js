@@ -53,25 +53,22 @@ export default class GamesService {
             return null;
         const oldPosition = new Position(move.oldPosition.x, move.oldPosition.y);
         const newPosition = new Position(move.newPosition.x, move.newPosition.y);
-        const reconstructedMove = new Move(move.chessPieceId, oldPosition, newPosition);
+        const reconstructedMove = new Move(oldPosition, newPosition);
         const chessboard = game.getChessboard();
         const isTurnValid = this.validateTurn(socketId);
         const isMoveValid = this.chessService.isMoveValid(socketId, oldPosition, newPosition, chessboard);
         if (!isTurnValid || !isMoveValid)
             return null;
-        const moveOutcome = this.chessService.moveChessPiece(reconstructedMove, chessboard);
-        game.increaseScore(moveOutcome.getScoreIncrease());
+        const scoreIncrease = this.chessService.moveChessPiece(reconstructedMove, chessboard);
+        game.increaseScore(scoreIncrease);
         game.switchTurn();
-        if (this.chessService.checkForStalemate(socketId, chessboard))
-            console.log("Stalemate occured!");
+        const gameState = this.chessService.checkGameState(socketId, chessboard);
         const moveResult = {
-            chessPieceId: move.chessPieceId,
             oldPostion: move.oldPosition,
             newPosition: move.newPosition,
-            moveType: moveOutcome.getMoveType(),
             score: game.getClientScore(),
             whoseTurn: game.getWhoseTurn().getClientUser(),
-            capturedPieceId: moveOutcome.getCapturedPieceId()
+            gameState: gameState
         };
         return moveResult;
     }

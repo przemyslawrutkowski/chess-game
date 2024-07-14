@@ -1,6 +1,6 @@
 import { MovementStrategy } from "../enums/MovementStrategy.js";
 import { PlayerColor } from "../enums/PlayerColor.js";
-import { MoveType } from "../enums/MoveType.js";
+import { GameState } from "../enums/GameState.js";
 
 export interface GameDTO {
     user1: UserDTO;
@@ -27,30 +27,22 @@ export interface ChessboardCellDTO {
     chessPiece: ChessPieceDTO | null;
 }
 
-export interface MoveInitiationDTO {
-    chessPieceId: string;
-    position: PositionDTO;
-}
-
 export interface MoveResultDTO {
-    chessPieceId: string;
     oldPostion: PositionDTO;
     newPosition: PositionDTO;
-    moveType: MoveType;
     score: ScoreDTO;
     whoseTurn: UserDTO;
-    capturedPieceId?: string;
+    gameState: GameState;
+}
+
+export interface MoveDTO {
+    oldPosition: PositionDTO;
+    newPosition: PositionDTO;
 }
 
 export interface PositionDTO {
     x: number;
     y: number;
-}
-
-export interface MoveDTO {
-    chessPieceId: string;
-    oldPosition: PositionDTO;
-    newPosition: PositionDTO;
 }
 
 export interface ScoreDTO {

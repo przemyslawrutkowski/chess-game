@@ -34,17 +34,14 @@ export function reconstructGame(game: GameDTO): ClientGame {
 }
 
 export function reconstructMoveResult(moveResult: MoveResultDTO): MoveResult {
-    const chessPieceId: string = moveResult.chessPieceId;
     const oldPosition: PositionDTO = moveResult.oldPostion;
     const newPosition: PositionDTO = moveResult.newPosition;
-    const moveType: MoveType = moveResult.moveType;
     const score: ScoreDTO = moveResult.score;
     const whoseTurn: UserDTO = moveResult.whoseTurn;
-    const capturedPieceId: string | undefined = moveResult.capturedPieceId;
 
     const reconstructedOldPosition = new Position(oldPosition.x, oldPosition.y);
     const reconstructedNewPosition = new Position(newPosition.x, newPosition.y);
     const reconstructedWhoseTurn = new ClientUser(whoseTurn.username, whoseTurn.color);
     const reconstructedScore = new Score(score.lightScore, score.darkScore);
-    return new MoveResult(chessPieceId, reconstructedOldPosition, reconstructedNewPosition, moveType, reconstructedScore, reconstructedWhoseTurn, capturedPieceId);
+    return new MoveResult(reconstructedOldPosition, reconstructedNewPosition, reconstructedScore, reconstructedWhoseTurn);
 }

@@ -4,7 +4,7 @@ import ChessboardCell from '../../src/models/ChessboardCell.js';
 import SocketConnection from '../../src/models/SocketConnection.js';
 import Events from '../../../shared/src/events/Events.js';
 import Position from '../../../shared/src/models/Position.js';
-import { MoveDTO, MoveInitiationDTO, PositionDTO } from '../../../shared/src/interfaces/DTO.js';
+import { MoveDTO, PositionDTO } from '../../../shared/src/interfaces/DTO.js';
 
 const template = document.createElement('template');
 template.innerHTML = `
@@ -80,10 +80,10 @@ export default class ChessboardCellC extends HTMLElement {
         event.preventDefault();
         if (event.dataTransfer) {
             const moveDataJson = event.dataTransfer.getData('application/json');
-            const moveData: MoveInitiationDTO = JSON.parse(moveDataJson);
-            const oldPosition = moveData.position;
+            const moveData: PositionDTO = JSON.parse(moveDataJson);
+            const oldPosition = moveData;
             const newPostition: PositionDTO = { x: this.getXPosition(), y: this.getYPosition() };
-            const move: MoveDTO = { chessPieceId: moveData.chessPieceId, oldPosition: oldPosition, newPosition: newPostition };
+            const move: MoveDTO = { oldPosition: oldPosition, newPosition: newPostition };
             this.socket.emit(Events.UPDATE_GAME_STATE, move);
         }
     }

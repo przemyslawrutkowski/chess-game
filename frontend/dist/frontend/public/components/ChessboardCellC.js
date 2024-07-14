@@ -69,9 +69,9 @@ export default class ChessboardCellC extends HTMLElement {
         if (event.dataTransfer) {
             const moveDataJson = event.dataTransfer.getData('application/json');
             const moveData = JSON.parse(moveDataJson);
-            const oldPosition = moveData.position;
+            const oldPosition = moveData;
             const newPostition = { x: this.getXPosition(), y: this.getYPosition() };
-            const move = { chessPieceId: moveData.chessPieceId, oldPosition: oldPosition, newPosition: newPostition };
+            const move = { oldPosition: oldPosition, newPosition: newPostition };
             this.socket.emit(Events.UPDATE_GAME_STATE, move);
         }
     }

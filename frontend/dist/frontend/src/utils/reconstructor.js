@@ -26,16 +26,13 @@ export function reconstructGame(game) {
     return new ClientGame(reconstructedUser1, reconstructedUser2, reconstructedChessboard, reconstructedWhoseTurn);
 }
 export function reconstructMoveResult(moveResult) {
-    const chessPieceId = moveResult.chessPieceId;
     const oldPosition = moveResult.oldPostion;
     const newPosition = moveResult.newPosition;
-    const moveType = moveResult.moveType;
     const score = moveResult.score;
     const whoseTurn = moveResult.whoseTurn;
-    const capturedPieceId = moveResult.capturedPieceId;
     const reconstructedOldPosition = new Position(oldPosition.x, oldPosition.y);
     const reconstructedNewPosition = new Position(newPosition.x, newPosition.y);
     const reconstructedWhoseTurn = new ClientUser(whoseTurn.username, whoseTurn.color);
     const reconstructedScore = new Score(score.lightScore, score.darkScore);
-    return new MoveResult(chessPieceId, reconstructedOldPosition, reconstructedNewPosition, moveType, reconstructedScore, reconstructedWhoseTurn, capturedPieceId);
+    return new MoveResult(reconstructedOldPosition, reconstructedNewPosition, reconstructedScore, reconstructedWhoseTurn);
 }

@@ -6,8 +6,7 @@ import { Chessboard } from "../types/Chessboard.js";
 import ChessboardCell from "../models/ChessboardCell.js";
 import Move from "../../../shared/src/models/Move.js";
 import Position from "../../../shared/src/models/Position.js";
-import { MoveType } from "../../../shared/src/enums/MoveType.js";
-import ChessMoveInfo from "../models/ChessMoveInfo.js";
+import { GameState } from "../../../shared/src/enums/GameState.js";
 
 export default class ChessService {
     private static instance: ChessService;
@@ -203,10 +202,10 @@ export default class ChessService {
         return this.isKingInCheck(kingPosition, occupiedPositions, chessboard);
     }
 
-    public checkForStalemate(socketId: string, chessboard: Chessboard): boolean { //We need to pass a chessboard after the move has been made!!!
+    public checkGameState(socketId: string, chessboard: Chessboard): GameState { //We need to pass a chessboard after the move has been made!!!
         const opponentKingPosition = this.getKingPosition(socketId, chessboard);
         const positionsOccupiedByMe = this.getOccupiedPositions(socketId, chessboard, true);
-        if (this.isKingInCheck(opponentKingPosition, positionsOccupiedByMe, chessboard)) return false;
+        if (this.isKingInCheck(opponentKingPosition, positionsOccupiedByMe, chessboard)) return GameState.InProgress;
 
         //Verify does the opponent's king can do any legal move
         //If yes -> return false
@@ -214,7 +213,7 @@ export default class ChessService {
         const kingPossibleMoves = this.getPossibleMoves(socketId, opponentKingPosition, chessboard);
         for (const move of kingPossibleMoves) {
             if (!this.doesResultsInCheck(socketId, opponentKingPosition, move, this.cloneChessboard(chessboard), true)) {
-                return false;
+                return GameState.InProgress;
             }
         }
 
@@ -225,12 +224,12 @@ export default class ChessService {
 
             for (const move of possibleMoves) {
                 if (!this.doesResultsInCheck(socketId, position, move, this.cloneChessboard(chessboard), true)) {
-                    return false;
+                    return GameState.InProgress;
                 }
             }
         }
 
-        return true;
+        return GameState.Stalemate;
     }
 
     private getKingPosition(socketId: string, chessboard: Chessboard, my: boolean = false): Position {
@@ -424,7 +423,7 @@ export default class ChessService {
         });
     }
 
-    public moveChessPiece(move: Move, chessboard: Chessboard): ChessMoveInfo {
+    public moveChessPiece(move: Move, chessboard: Chessboard): number {
         const oldPosition = move.getOldPosition();
         const newPosition = move.getNewPosition();
 
@@ -434,18 +433,12 @@ export default class ChessService {
         const chessPieceOldPosition = oldCell.getChessPiece() as ChessPiece;
         const chessPieceNewPosition = newCell.getChessPiece();
 
-        const moveType = chessPieceNewPosition ? MoveType.Capture : MoveType.Move;
-        const scoreIncrease = this.calculateScoreIncreaseForCapture(chessPieceNewPosition);
-        const capturedPieceId = chessPieceNewPosition ? chessPieceNewPosition.getId() : undefined
-
-        const result = new ChessMoveInfo(moveType, scoreIncrease, capturedPieceId);
-
         oldCell.setChessPiece(null);
         newCell.setChessPiece(chessPieceOldPosition);
 
         if (chessPieceOldPosition.getMovementStrategy() === MovementStrategy.PawnMovement && chessPieceOldPosition.getIsFirstMove()) chessPieceOldPosition.setIsFirstMove(false);
 
-        return result;
+        return this.calculateScoreIncreaseForCapture(chessPieceNewPosition);
     }
 
     private calculateScoreIncreaseForCapture(chessPiece: ChessPiece | null): number {

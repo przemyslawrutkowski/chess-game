@@ -5,7 +5,7 @@ import ChessService from "../services/ChessService.js";
 import Move from "../../../shared/src/models/Move.js";
 import { MoveResultDTO, MoveDTO } from "../../../shared/src/interfaces/DTO.js";
 import Position from "../../../shared/src/models/Position.js";
-import ChessMoveInfo from "../models/ChessMoveInfo.js";
+import { GameState } from "../../../shared/src/enums/GameState.js";
 
 export default class GamesService {
     private static instance: GamesService;
@@ -59,7 +59,7 @@ export default class GamesService {
 
         const oldPosition = new Position(move.oldPosition.x, move.oldPosition.y);
         const newPosition = new Position(move.newPosition.x, move.newPosition.y);
-        const reconstructedMove = new Move(move.chessPieceId, oldPosition, newPosition);
+        const reconstructedMove = new Move(oldPosition, newPosition);
         const chessboard = game.getChessboard();
 
         const isTurnValid = this.validateTurn(socketId);
@@ -67,19 +67,18 @@ export default class GamesService {
 
         if (!isTurnValid || !isMoveValid) return null;
 
-        const moveOutcome: ChessMoveInfo = this.chessService.moveChessPiece(reconstructedMove, chessboard);
-        game.increaseScore(moveOutcome.getScoreIncrease());
+        const scoreIncrease = this.chessService.moveChessPiece(reconstructedMove, chessboard);
+        game.increaseScore(scoreIncrease);
         game.switchTurn();
-        if (this.chessService.checkForStalemate(socketId, chessboard)) console.log("Stalemate occured!");
+
+        const gameState: GameState = this.chessService.checkGameState(socketId, chessboard);
 
         const moveResult: MoveResultDTO = {
-            chessPieceId: move.chessPieceId,
             oldPostion: move.oldPosition,
             newPosition: move.newPosition,
-            moveType: moveOutcome.getMoveType(),
             score: game.getClientScore(),
             whoseTurn: game.getWhoseTurn().getClientUser(),
-            capturedPieceId: moveOutcome.getCapturedPieceId()
+            gameState: gameState
         };
 
         return moveResult;

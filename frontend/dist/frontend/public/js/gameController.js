@@ -22,14 +22,10 @@ export default function gameController() {
         });
         socket.on(Events.GAME_STATE_UPDATE, (moveResult) => {
             const reconstructedMoveResult = reconstructMoveResult(moveResult);
-            //console.log(reconstructedMoveResult);
-            //const chessPieceId = reconstructedMoveResult.getChessPieceId();
             const oldPosition = reconstructedMoveResult.getOldPosition();
             const newPosition = reconstructedMoveResult.getNewPosition();
-            //const moveType = reconstructedMoveResult.getMoveType();
-            const score = reconstructedMoveResult.getScore(); //used
-            const whoseTurn = reconstructedMoveResult.getWhoseTurn(); //used
-            //const capturedPieceId = reconstructedMoveResult.getCapturedPieceId();
+            const score = reconstructedMoveResult.getScore();
+            const whoseTurn = reconstructedMoveResult.getWhoseTurn();
             infoPanel.setWhoseTurn(whoseTurn.getUsername());
             infoPanel.setScore(score.getLightScore(), score.getDarkScore());
             chessboardPanel.update(oldPosition, newPosition);
