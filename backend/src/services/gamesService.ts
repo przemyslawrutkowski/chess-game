@@ -70,6 +70,7 @@ export default class GamesService {
         const moveOutcome: ChessMoveInfo = this.chessService.moveChessPiece(reconstructedMove, chessboard);
         game.increaseScore(moveOutcome.getScoreIncrease());
         game.switchTurn();
+        if (this.chessService.checkForStalemate(socketId, chessboard)) console.log("Stalemate occured!");
 
         const moveResult: MoveResultDTO = {
             chessPieceId: move.chessPieceId,

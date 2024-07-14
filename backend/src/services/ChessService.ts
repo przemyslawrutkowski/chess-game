@@ -89,19 +89,22 @@ export default class ChessService {
         newCell.setChessPiece(chessPieceOldPosition);
     }
 
-    private isPositionOccupiedByPlayer(socketId: string, position: Position, chessboard: Chessboard): boolean {
+    private isPositionOccupied(socketId: string, position: Position, chessboard: Chessboard, byMe: boolean = false): boolean {
         const targetPiece = this.getChessPieceAtPosition(position, chessboard);
         if (targetPiece) {
-            return targetPiece.getUser().getSocketId() === socketId;
+            return byMe ? targetPiece.getUser().getSocketId() === socketId : targetPiece.getUser().getSocketId() !== socketId;
         }
         return false;
     }
 
-    private getPositionsOccupiedByOpponent(socketId: string, chessboard: Chessboard): Position[] {
+    private getOccupiedPositions(socketId: string, chessboard: Chessboard, byMe: boolean = false): Position[] {
         return chessboard.flatMap(row => row.flatMap(cell => {
             const piece = cell.getChessPiece();
-            if (piece && piece.getUser().getSocketId() !== socketId) {
-                return [new Position(cell.getXPosition(), cell.getYPosition())];
+            if (piece) {
+                const condition = byMe ? piece.getUser().getSocketId() === socketId : piece.getUser().getSocketId() !== socketId;
+                if (condition) {
+                    return [new Position(cell.getXPosition(), cell.getYPosition())];
+                }
             }
             return [];
         }));
@@ -110,27 +113,24 @@ export default class ChessService {
     public isMoveValid(socketId: string, oldPosition: Position, newPosition: Position, chessboard: Chessboard): boolean {
         if (!this.isPositionValid(oldPosition) || !this.isPositionValid(newPosition)) return false;
         const piece = this.getChessPieceAtPosition(oldPosition, chessboard);
-
         if (!piece) return false;
 
-        const isOwnershipValid = this.isPositionOccupiedByPlayer(socketId, oldPosition, chessboard);
-
-        if (!isOwnershipValid) return false;
+        const isOwnershipValid = this.isPositionOccupied(socketId, oldPosition, chessboard, true);
+        const isOccupiedByMe = this.isPositionOccupied(socketId, newPosition, chessboard, true);
+        if (!isOwnershipValid || isOccupiedByMe) return false;
 
         const clonedChessboard = this.cloneChessboard(chessboard);
 
-        const isMoveLegal = this.isMoveLegal(oldPosition, newPosition, clonedChessboard, socketId);
+        const isMoveLegal = this.isMoveLegal(oldPosition, newPosition, clonedChessboard);
         if (!isMoveLegal) return false;
 
         const doesResultsInCheck = this.doesResultsInCheck(socketId, oldPosition, newPosition, clonedChessboard);
         if (doesResultsInCheck) return false;
 
-        if (piece.getMovementStrategy() === MovementStrategy.PawnMovement && piece.getIsFirstMove()) piece.setIsFirstMove(false);
-
         return true;
     }
 
-    private isMoveLegal(oldPosition: Position, newPosition: Position, chessboard: Chessboard, socketId?: string): boolean {
+    private isMoveLegal(oldPosition: Position, newPosition: Position, chessboard: Chessboard): boolean {
         const oldX = oldPosition.getX();
         const oldY = oldPosition.getY();
         const newX = newPosition.getX();
@@ -138,11 +138,6 @@ export default class ChessService {
 
         const chessPiece = this.getChessPieceAtPosition(oldPosition, chessboard);
         const targetPiece = this.getChessPieceAtPosition(newPosition, chessboard);
-
-        if (socketId) {
-            const isOccupiedBySamePlayer = this.isPositionOccupiedByPlayer(socketId, newPosition, chessboard);
-            if (isOccupiedBySamePlayer) return false;
-        }
 
         if (!chessPiece) return false;
 
@@ -201,23 +196,232 @@ export default class ChessService {
         return false;
     }
 
-    private doesResultsInCheck(socketId: string, oldPosition: Position, newPosition: Position, chessboard: Chessboard) {
+    private doesResultsInCheck(socketId: string, oldPosition: Position, newPosition: Position, chessboard: Chessboard, opponent: boolean = false) {
         this.setChessPieceAtPosition(oldPosition, newPosition, chessboard);
-        const kingPosition = this.getKingPosition(socketId, chessboard);
-        const positionsOccupiedByOpponent = this.getPositionsOccupiedByOpponent(socketId, chessboard);
-        return this.isKingInCheck(kingPosition, positionsOccupiedByOpponent, chessboard);
+        const kingPosition = this.getKingPosition(socketId, chessboard, !opponent);
+        const occupiedPositions = this.getOccupiedPositions(socketId, chessboard, opponent);
+        return this.isKingInCheck(kingPosition, occupiedPositions, chessboard);
     }
 
-    private getKingPosition(socketId: string, chessboard: Chessboard): Position {
+    public checkForStalemate(socketId: string, chessboard: Chessboard): boolean { //We need to pass a chessboard after the move has been made!!!
+        const opponentKingPosition = this.getKingPosition(socketId, chessboard);
+        const positionsOccupiedByMe = this.getOccupiedPositions(socketId, chessboard, true);
+        if (this.isKingInCheck(opponentKingPosition, positionsOccupiedByMe, chessboard)) return false;
+
+        //Verify does the opponent's king can do any legal move
+        //If yes -> return false
+        //If no -> go to the next step
+        const kingPossibleMoves = this.getPossibleMoves(socketId, opponentKingPosition, chessboard);
+        for (const move of kingPossibleMoves) {
+            if (!this.doesResultsInCheck(socketId, opponentKingPosition, move, this.cloneChessboard(chessboard), true)) {
+                return false;
+            }
+        }
+
+        const positionsOccupiedByOpponent = this.getOccupiedPositions(socketId, chessboard);
+        //Verify does any other oponent's chess piece can do any legal move
+        for (const position of positionsOccupiedByOpponent) {
+            const possibleMoves = this.getPossibleMoves(socketId, position, chessboard);
+
+            for (const move of possibleMoves) {
+                if (!this.doesResultsInCheck(socketId, position, move, this.cloneChessboard(chessboard), true)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private getKingPosition(socketId: string, chessboard: Chessboard, my: boolean = false): Position {
         for (const row of chessboard) {
             for (const cell of row) {
                 const piece = cell.getChessPiece();
-                if (piece && piece.getMovementStrategy() === MovementStrategy.KingMovement && piece.getUser().getSocketId() === socketId) {
-                    return new Position(cell.getXPosition(), cell.getYPosition());
+                if (piece && piece.getMovementStrategy() === MovementStrategy.KingMovement) {
+                    const condition = my ? piece.getUser().getSocketId() === socketId : piece.getUser().getSocketId() !== socketId;
+                    if (condition) {
+                        return new Position(cell.getXPosition(), cell.getYPosition());
+                    }
                 }
             }
         }
         throw new Error("King not found");
+    }
+
+    private getPossibleMoves(socketId: string, position: Position, chessboard: Chessboard): Position[] {
+        const chessPiece = this.getChessPieceAtPosition(position, chessboard);
+        if (!chessPiece) return [];
+
+        const movementStrategy = chessPiece.getMovementStrategy();
+
+        switch (movementStrategy) {
+            case MovementStrategy.KingMovement:
+                return this.getKingMoves(socketId, position, chessboard);
+            case MovementStrategy.QueenMovement:
+                return this.getQueenMoves(socketId, position, chessboard);
+            case MovementStrategy.RookMovement:
+                return this.getRookMoves(socketId, position, chessboard);
+            case MovementStrategy.BishopMovement:
+                return this.getBishopMoves(socketId, position, chessboard);
+            case MovementStrategy.KnightMovement:
+                return this.getKnightMoves(socketId, position, chessboard);
+            case MovementStrategy.PawnMovement:
+                return this.getPawnMoves(socketId, position, chessboard);
+        }
+    }
+
+    private getKingMoves(socketId: string, position: Position, chessboard: Chessboard): Position[] {
+        const x = position.getX();
+        const y = position.getY();
+
+        const possibleMoves: Position[] = [
+            new Position(x - 1, y),
+            new Position(x - 1, y + 1),
+            new Position(x, y + 1),
+            new Position(x + 1, y + 1),
+            new Position(x + 1, y),
+            new Position(x + 1, y - 1),
+            new Position(x, y - 1),
+            new Position(x - 1, y - 1),
+        ];
+
+        return possibleMoves.filter(position => {
+            return this.isPositionValid(position) && !this.isPositionOccupied(socketId, position, chessboard, true);
+        });
+    }
+
+    private getQueenMoves(socketId: string, position: Position, chessboard: Chessboard): Position[] {
+        const x = position.getX();
+        const y = position.getY();
+
+        const possibleMoves: Position[] = [];
+
+        const rookDirections = [[-1, 0], [0, 1], [1, 0], [0, -1]];
+        for (const direction of rookDirections) {
+            let x = position.getX() + direction[0];
+            let y = position.getY() + direction[1];
+            while (this.isPositionValid(new Position(x, y))) {
+                if (!this.isPositionOccupied(socketId, new Position(x, y), chessboard, true)) {
+                    possibleMoves.push(new Position(x, y));
+                } else {
+                    break;
+                }
+                x += direction[0];
+                y += direction[1];
+            }
+        }
+
+        const bishopDirections = [[-1, 1], [1, 1], [1, -1], [-1, -1]];
+        for (const direction of bishopDirections) {
+            let x = position.getX() + direction[0];
+            let y = position.getY() + direction[1];
+            while (this.isPositionValid(new Position(x, y))) {
+                if (!this.isPositionOccupied(socketId, new Position(x, y), chessboard, true)) {
+                    possibleMoves.push(new Position(x, y));
+                } else {
+                    break;
+                }
+                x += direction[0];
+                y += direction[1];
+            }
+        }
+
+        return possibleMoves;
+    }
+
+    private getRookMoves(socketId: string, position: Position, chessboard: Chessboard): Position[] {
+        const x = position.getX();
+        const y = position.getY();
+
+        const possibleMoves: Position[] = [];
+        const directions = [[-1, 0], [0, 1], [1, 0], [0, -1]];
+
+        for (const direction of directions) {
+            let x = position.getX() + direction[0];
+            let y = position.getY() + direction[1];
+            while (this.isPositionValid(new Position(x, y))) {
+                if (!this.isPositionOccupied(socketId, new Position(x, y), chessboard, true)) {
+                    possibleMoves.push(new Position(x, y));
+                } else {
+                    break;
+                }
+                x += direction[0];
+                y += direction[1];
+            }
+        }
+
+        return possibleMoves;
+    }
+
+    private getBishopMoves(socketId: string, position: Position, chessboard: Chessboard): Position[] {
+        const x = position.getX();
+        const y = position.getY();
+
+        const possibleMoves: Position[] = [];
+        const directions = [[-1, 1], [1, 1], [1, -1], [-1, -1]];
+
+        for (const direction of directions) {
+            let x = position.getX() + direction[0];
+            let y = position.getY() + direction[1];
+            while (this.isPositionValid(new Position(x, y))) {
+                if (!this.isPositionOccupied(socketId, new Position(x, y), chessboard, true)) {
+                    possibleMoves.push(new Position(x, y));
+                } else {
+                    break;
+                }
+                x += direction[0];
+                y += direction[1];
+            }
+        }
+
+        return possibleMoves;
+    }
+
+    private getKnightMoves(socketId: string, position: Position, chessboard: Chessboard): Position[] {
+        const x = position.getX();
+        const y = position.getY();
+
+        const possibleMoves: Position[] = [
+            new Position(x - 2, y + 1),
+            new Position(x - 1, y + 2),
+
+            new Position(x + 1, y + 2),
+            new Position(x + 2, y + 1),
+
+            new Position(x + 2, y - 1),
+            new Position(x + 1, y - 2),
+
+            new Position(x - 2, y - 1),
+            new Position(x - 1, y - 2),
+        ];
+
+        return possibleMoves.filter(position => {
+            return this.isPositionValid(position) && !this.isPositionOccupied(socketId, position, chessboard, true);
+        });
+    }
+
+    private getPawnMoves(socketId: string, position: Position, chessboard: Chessboard): Position[] {
+        const x = position.getX();
+        const y = position.getY();
+
+        const chessPiece = this.getChessPieceAtPosition(position, chessboard);
+        if (!chessPiece) return [];
+
+        const direction = chessPiece.getUser().getColor() === PlayerColor.Light ? 1 : -1;
+
+        const doubleMove: Position = new Position(x + 2 * direction, y);
+        const singleMove: Position = new Position(x + direction, y);
+        const diagonalMoves: Position[] = [
+            new Position(x + direction, y + 1),
+            new Position(x + direction, y - 1)
+        ];
+
+        const possibleMoves: Position[] = [];
+        possibleMoves.push(doubleMove, singleMove, ...diagonalMoves);
+
+        return possibleMoves.filter(position => {
+            return this.isPositionValid(position) && !this.isPositionOccupied(socketId, position, chessboard, true);
+        });
     }
 
     public moveChessPiece(move: Move, chessboard: Chessboard): ChessMoveInfo {
@@ -227,7 +431,7 @@ export default class ChessService {
         const oldCell = chessboard[oldPosition.getX()][oldPosition.getY()];
         const newCell = chessboard[newPosition.getX()][newPosition.getY()];
 
-        const chessPieceOldPosition = oldCell.getChessPiece();
+        const chessPieceOldPosition = oldCell.getChessPiece() as ChessPiece;
         const chessPieceNewPosition = newCell.getChessPiece();
 
         const moveType = chessPieceNewPosition ? MoveType.Capture : MoveType.Move;
@@ -238,6 +442,8 @@ export default class ChessService {
 
         oldCell.setChessPiece(null);
         newCell.setChessPiece(chessPieceOldPosition);
+
+        if (chessPieceOldPosition.getMovementStrategy() === MovementStrategy.PawnMovement && chessPieceOldPosition.getIsFirstMove()) chessPieceOldPosition.setIsFirstMove(false);
 
         return result;
     }
