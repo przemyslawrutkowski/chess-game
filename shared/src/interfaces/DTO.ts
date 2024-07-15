@@ -8,6 +8,7 @@ export interface GameDTO {
     chessboard: ChessboardDTO;
     whoseTurn: UserDTO;
     score: ScoreDTO;
+    gameState: GameState;
 }
 
 export interface UserDTO {
@@ -31,7 +32,7 @@ export interface MoveResultDTO {
     oldPostion: PositionDTO;
     newPosition: PositionDTO;
     score: ScoreDTO;
-    whoseTurn: UserDTO;
+    currentOrWinningPlayer: UserDTO | null;
     gameState: GameState;
 }
 

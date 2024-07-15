@@ -50,7 +50,7 @@ export default class GamesService {
     private validateTurn(socketId: string): boolean {
         const game = this.getGameState(socketId);
         if (!game) return false;
-        return game.getWhoseTurn().getSocketId() === socketId;
+        return game.getCurrentOrWinningPlayer()?.getSocketId() === socketId;
     }
 
     public moveChessPiece(socketId: string, move: MoveDTO): MoveResultDTO | null {
@@ -69,15 +69,17 @@ export default class GamesService {
 
         const scoreIncrease = this.chessService.moveChessPiece(reconstructedMove, chessboard);
         game.increaseScore(scoreIncrease);
-        game.switchTurn();
 
         const gameState: GameState = this.chessService.checkGameState(socketId, chessboard);
+        game.updateCurrentPlayerOrWinner(gameState);
+
+        const currentOrWinningPlayer = game.getCurrentOrWinningPlayer();
 
         const moveResult: MoveResultDTO = {
             oldPostion: move.oldPosition,
             newPosition: move.newPosition,
             score: game.getClientScore(),
-            whoseTurn: game.getWhoseTurn().getClientUser(),
+            currentOrWinningPlayer: currentOrWinningPlayer ? currentOrWinningPlayer.getClientUser() : null,
             gameState: gameState
         };
 

@@ -10,6 +10,7 @@ export function reconstructGame(game) {
     const user2 = game.user2;
     const chessboard = game.chessboard;
     const whoseTurn = game.whoseTurn;
+    const gameState = game.gameState;
     const reconstructedUser1 = new ClientUser(user1.username, user1.color);
     const reconstructedUser2 = new ClientUser(user2.username, user2.color);
     const reconstructedChessboard = chessboard.map(row => row.map(cell => {
@@ -23,16 +24,17 @@ export function reconstructGame(game) {
         return new ChessboardCell(cell.xPosition, cell.yPosition, null);
     }));
     const reconstructedWhoseTurn = new ClientUser(whoseTurn.username, whoseTurn.color);
-    return new ClientGame(reconstructedUser1, reconstructedUser2, reconstructedChessboard, reconstructedWhoseTurn);
+    return new ClientGame(reconstructedUser1, reconstructedUser2, reconstructedChessboard, reconstructedWhoseTurn, gameState);
 }
 export function reconstructMoveResult(moveResult) {
     const oldPosition = moveResult.oldPostion;
     const newPosition = moveResult.newPosition;
     const score = moveResult.score;
-    const whoseTurn = moveResult.whoseTurn;
+    const currentOrWinningPlayer = moveResult.currentOrWinningPlayer;
+    const gameState = moveResult.gameState;
     const reconstructedOldPosition = new Position(oldPosition.x, oldPosition.y);
     const reconstructedNewPosition = new Position(newPosition.x, newPosition.y);
-    const reconstructedWhoseTurn = new ClientUser(whoseTurn.username, whoseTurn.color);
     const reconstructedScore = new Score(score.lightScore, score.darkScore);
-    return new MoveResult(reconstructedOldPosition, reconstructedNewPosition, reconstructedScore, reconstructedWhoseTurn);
+    const reconstructedCurrentOrWinningPlayer = currentOrWinningPlayer ? new ClientUser(currentOrWinningPlayer.username, currentOrWinningPlayer.color) : null;
+    return new MoveResult(reconstructedOldPosition, reconstructedNewPosition, reconstructedScore, reconstructedCurrentOrWinningPlayer, gameState);
 }

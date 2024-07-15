@@ -45,7 +45,7 @@ export default class GamesService {
         const game = this.getGameState(socketId);
         if (!game)
             return false;
-        return game.getWhoseTurn().getSocketId() === socketId;
+        return game.getCurrentOrWinningPlayer()?.getSocketId() === socketId;
     }
     moveChessPiece(socketId, move) {
         const game = this.getGameState(socketId);
@@ -61,14 +61,14 @@ export default class GamesService {
             return null;
         const scoreIncrease = this.chessService.moveChessPiece(reconstructedMove, chessboard);
         game.increaseScore(scoreIncrease);
-        game.switchTurn();
         const gameState = this.chessService.checkGameState(socketId, chessboard);
-        console.log(gameState);
+        game.updateCurrentPlayerOrWinner(gameState);
+        const currentOrWinningPlayer = game.getCurrentOrWinningPlayer();
         const moveResult = {
             oldPostion: move.oldPosition,
             newPosition: move.newPosition,
             score: game.getClientScore(),
-            whoseTurn: game.getWhoseTurn().getClientUser(),
+            currentOrWinningPlayer: currentOrWinningPlayer ? currentOrWinningPlayer.getClientUser() : null,
             gameState: gameState
         };
         return moveResult;

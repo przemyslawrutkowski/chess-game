@@ -3,11 +3,13 @@ export default class ClientGame {
     user2;
     chessboard;
     whoseTurn;
-    constructor(user1, user2, chessboard, whoseTurn) {
+    gameState;
+    constructor(user1, user2, chessboard, whoseTurn, gameState) {
         this.user1 = user1;
         this.user2 = user2;
         this.chessboard = chessboard;
         this.whoseTurn = whoseTurn;
+        this.gameState = gameState;
     }
     getUser1() {
         return this.user1;
@@ -20,5 +22,8 @@ export default class ClientGame {
     }
     getWhoseTurn() {
         return this.whoseTurn;
+    }
+    getGameState() {
+        return this.gameState;
     }
 }

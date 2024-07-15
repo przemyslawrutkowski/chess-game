@@ -1,5 +1,6 @@
 import globalStyle from '../js/globalStyles.js';
 import { PlayerColor } from '../../../shared/src/enums/PlayerColor.js';
+import { GameState } from '../../../shared/src/enums/GameState.js';
 const template = document.createElement('template');
 template.innerHTML = `
     <style>
@@ -65,7 +66,7 @@ template.innerHTML = `
             font-weight: bold;
         }
 
-        .whose-turn {
+        .announcement {
             text-align: center;
             width: 100%;
             padding: 1rem;
@@ -119,19 +120,19 @@ template.innerHTML = `
                 <p class="dark-score">0</p>
             </div>
         </div>
-        <p class="whose-turn"></p>
+        <p class="announcement"></p>
     </div>
 `;
 export default class InfoPanelC extends HTMLElement {
     opponents;
-    whoseTurn;
+    announcement;
     lightScore;
     darkScore;
     constructor() {
         super();
         const clone = template.content.cloneNode(true);
         this.opponents = clone.querySelectorAll('.opponent');
-        this.whoseTurn = clone.querySelector('.whose-turn');
+        this.announcement = clone.querySelector('.announcement');
         this.lightScore = clone.querySelector('.light-score');
         this.darkScore = clone.querySelector('.dark-score');
         const shadowRoot = this.attachShadow({ mode: 'open' });
@@ -156,8 +157,19 @@ export default class InfoPanelC extends HTMLElement {
         opponent1Username.innerText = user1.getUsername();
         opponent2Username.innerText = user2.getUsername();
     }
-    setWhoseTurn(username) {
-        this.whoseTurn.innerText = `It's ${username} turn...`;
+    setAnnouncement(gameState, username) {
+        switch (gameState) {
+            case GameState.Checkmate:
+                this.announcement.innerText = `Checkmate! ${username} wins!`;
+                break;
+            case GameState.Stalemate:
+                this.announcement.innerText = `Stalemate! It's a draw!`;
+                break;
+            case GameState.InProgress:
+            default:
+                this.announcement.innerText = `It's ${username} turn...`;
+                break;
+        }
     }
     setScore(lightScore, darkScore) {
         this.lightScore.innerText = lightScore.toString();

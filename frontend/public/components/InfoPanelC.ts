@@ -1,6 +1,7 @@
 import globalStyle from '../js/globalStyles.js';
 import ClientUser from '../../src/models/ClientUser.js';
 import { PlayerColor } from '../../../shared/src/enums/PlayerColor.js';
+import { GameState } from '../../../shared/src/enums/GameState.js';
 
 const template = document.createElement('template');
 template.innerHTML = `
@@ -67,7 +68,7 @@ template.innerHTML = `
             font-weight: bold;
         }
 
-        .whose-turn {
+        .announcement {
             text-align: center;
             width: 100%;
             padding: 1rem;
@@ -121,13 +122,13 @@ template.innerHTML = `
                 <p class="dark-score">0</p>
             </div>
         </div>
-        <p class="whose-turn"></p>
+        <p class="announcement"></p>
     </div>
 `;
 
 export default class InfoPanelC extends HTMLElement {
     private opponents: NodeListOf<Element>;
-    private whoseTurn: HTMLParagraphElement;
+    private announcement: HTMLParagraphElement;
     private lightScore: HTMLParagraphElement;
     private darkScore: HTMLParagraphElement;
 
@@ -136,7 +137,7 @@ export default class InfoPanelC extends HTMLElement {
         super();
         const clone = template.content.cloneNode(true) as DocumentFragment;
         this.opponents = clone.querySelectorAll('.opponent') as NodeListOf<HTMLDivElement>;
-        this.whoseTurn = clone.querySelector('.whose-turn') as HTMLParagraphElement;
+        this.announcement = clone.querySelector('.announcement') as HTMLParagraphElement;
         this.lightScore = clone.querySelector('.light-score') as HTMLParagraphElement;
         this.darkScore = clone.querySelector('.dark-score') as HTMLParagraphElement;
         const shadowRoot = this.attachShadow({ mode: 'open' });
@@ -167,8 +168,20 @@ export default class InfoPanelC extends HTMLElement {
         opponent2Username.innerText = user2.getUsername();
     }
 
-    public setWhoseTurn(username: string) {
-        this.whoseTurn.innerText = `It's ${username} turn...`;
+    public setAnnouncement(gameState?: GameState, username?: string) {
+        switch (gameState) {
+            case GameState.Checkmate:
+                this.announcement.innerText = `Checkmate! ${username} wins!`;
+                break;
+            case GameState.Stalemate:
+                this.announcement.innerText = `Stalemate! It's a draw!`;
+                break;
+            case GameState.InProgress:
+            default:
+                this.announcement.innerText = `It's ${username} turn...`;
+                break;
+        }
+
     }
 
     public setScore(lightScore: number, darkScore: number) {

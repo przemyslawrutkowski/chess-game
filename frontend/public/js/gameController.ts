@@ -4,6 +4,7 @@ import { GameDTO, MoveResultDTO } from '../../../shared/src/interfaces/DTO.js';
 import InfoPanelC from '../components/InfoPanelC.js';
 import ChessboardPanelC from '../components/ChessboardPanelC.js';
 import { reconstructGame, reconstructMoveResult } from '../../src/utils/reconstructor.js';
+import { GameState } from '../../../shared/src/enums/GameState.js';
 
 export default function gameController() {
     try {
@@ -23,11 +24,12 @@ export default function gameController() {
             const user1 = reconstructedGame.getUser1();
             const user2 = reconstructedGame.getUser2();
             const whoseUserTurn = reconstructedGame.getWhoseTurn();
+            const gameState = reconstructedGame.getGameState();
 
             chessboardPanel.innerHTML = '';
 
             infoPanel.initialize(user1, user2);
-            infoPanel.setWhoseTurn(whoseUserTurn.getUsername());
+            infoPanel.setAnnouncement(gameState, whoseUserTurn.getUsername());
 
             chessboardPanel.initialize(chessboard);
         });
@@ -38,9 +40,15 @@ export default function gameController() {
             const oldPosition = reconstructedMoveResult.getOldPosition();
             const newPosition = reconstructedMoveResult.getNewPosition();
             const score = reconstructedMoveResult.getScore();
-            const whoseTurn = reconstructedMoveResult.getWhoseTurn();
+            const currentOrWinningPlayer = reconstructedMoveResult.getCurrentOrWinningPlayer();
+            const gameState = reconstructedMoveResult.getGameState();
 
-            infoPanel.setWhoseTurn(whoseTurn.getUsername());
+            if (currentOrWinningPlayer) {
+                infoPanel.setAnnouncement(gameState, currentOrWinningPlayer.getUsername());
+            } else {
+                infoPanel.setAnnouncement(gameState);
+            }
+
             infoPanel.setScore(score.getLightScore(), score.getDarkScore());
 
             chessboardPanel.update(oldPosition, newPosition);
