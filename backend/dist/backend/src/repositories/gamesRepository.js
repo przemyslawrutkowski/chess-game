@@ -23,6 +23,15 @@ export default class GamesRepository {
         }
         return false;
     }
+    removeGame(socketId) {
+        const index = this.games.findIndex(g => g.getUser1().getSocketId() === socketId ||
+            g.getUser2().getSocketId() === socketId);
+        if (index !== -1) {
+            this.games.splice(index, 1);
+            return true;
+        }
+        return false;
+    }
     getGameState(socketId) {
         return this.games.find(g => g.getUser1().getSocketId() === socketId ||
             g.getUser2().getSocketId() === socketId);

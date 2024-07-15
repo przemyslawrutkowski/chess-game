@@ -2,7 +2,7 @@ import ServerGame from "../models/ServerGame.js";
 
 export default class GamesRepository {
     private static instance: GamesRepository;
-    private games: ServerGame[];
+    public games: ServerGame[];
 
     private constructor() {
         this.games = [];
@@ -27,6 +27,18 @@ export default class GamesRepository {
         );
         if (!userAlreadyPlaying) {
             this.games.push(game);
+            return true;
+        }
+        return false;
+    }
+
+    public removeGame(socketId: string): boolean {
+        const index = this.games.findIndex(g =>
+            g.getUser1().getSocketId() === socketId ||
+            g.getUser2().getSocketId() === socketId
+        );
+        if (index !== -1) {
+            this.games.splice(index, 1);
             return true;
         }
         return false;

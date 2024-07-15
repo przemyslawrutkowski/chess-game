@@ -102,11 +102,13 @@ io.on("connection", (socket) => {
         }
     });
     socket.on(Events.UPDATE_GAME_STATE, (move) => {
-        const moveResult = gamesService.moveChessPiece(socket.id, move);
         const game = gamesService.getGameState(socket.id);
-        if (moveResult && game) {
-            io.to(game.getUser1().getSocketId()).emit(Events.GAME_STATE_UPDATE, moveResult);
-            io.to(game.getUser2().getSocketId()).emit(Events.GAME_STATE_UPDATE, moveResult);
+        if (game) {
+            const moveResult = gamesService.moveChessPiece(socket.id, move);
+            if (moveResult) {
+                io.to(game.getUser1().getSocketId()).emit(Events.GAME_STATE_UPDATE, moveResult);
+                io.to(game.getUser2().getSocketId()).emit(Events.GAME_STATE_UPDATE, moveResult);
+            }
         }
     });
 });

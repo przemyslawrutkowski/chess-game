@@ -181,7 +181,6 @@ export default class InfoPanelC extends HTMLElement {
                 this.announcement.innerText = `It's ${username} turn...`;
                 break;
         }
-
     }
 
     public setScore(lightScore: number, darkScore: number) {

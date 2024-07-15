@@ -4,6 +4,7 @@ import ServerGame from "../models/ServerGame.js";
 import ChessService from "../services/ChessService.js";
 import Move from "../../../shared/src/models/Move.js";
 import Position from "../../../shared/src/models/Position.js";
+import { GameState } from "../../../shared/src/enums/GameState.js";
 export default class GamesService {
     static instance;
     gamesRepository;
@@ -64,6 +65,12 @@ export default class GamesService {
         const gameState = this.chessService.checkGameState(socketId, chessboard);
         game.updateCurrentPlayerOrWinner(gameState);
         const currentOrWinningPlayer = game.getCurrentOrWinningPlayer();
+        if (gameState === GameState.Checkmate || gameState === GameState.Stalemate) {
+            console.log(`Before: ${JSON.stringify(this.gamesRepository.games)}`);
+            if (!this.gamesRepository.removeGame(socketId))
+                throw new Error('We could not remove the game');
+            console.log(`After: ${JSON.stringify(this.gamesRepository.games)}`);
+        }
         const moveResult = {
             oldPostion: move.oldPosition,
             newPosition: move.newPosition,
