@@ -32,7 +32,10 @@ export default function startInit(onSuccess) {
             else {
                 //zrywamy polaczenie z serwerem
                 socket.emit(Events.REMOVE_FROM_POOL);
-                socket.on(Events.REMOVED_FROM_POOL, () => socket.disconnect());
+                socket.on(Events.REMOVED_FROM_POOL, () => {
+                    console.log(`Disconnected from the server`);
+                    socket.disconnect();
+                });
                 //zmieniamy status przycisku
                 buttonStatus = 'Connect';
                 //ukrywamy spinner

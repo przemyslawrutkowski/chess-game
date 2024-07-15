@@ -66,10 +66,8 @@ export default class GamesService {
         game.updateCurrentPlayerOrWinner(gameState);
         const currentOrWinningPlayer = game.getCurrentOrWinningPlayer();
         if (gameState === GameState.Checkmate || gameState === GameState.Stalemate) {
-            console.log(`Before: ${JSON.stringify(this.gamesRepository.games)}`);
             if (!this.gamesRepository.removeGame(socketId))
                 throw new Error('We could not remove the game');
-            console.log(`After: ${JSON.stringify(this.gamesRepository.games)}`);
         }
         const moveResult = {
             oldPostion: move.oldPosition,

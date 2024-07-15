@@ -90,7 +90,9 @@ io.on("connection", (socket) => {
         }
     });
     socket.on(Events.REMOVE_FROM_POOL, () => {
+        console.log(`Before: ${JSON.stringify(poolService.poolRepository.pool)}`);
         const result = poolService.removeUser(socket.id);
+        console.log(`After: ${JSON.stringify(poolService.poolRepository.pool)}`);
         if (result) {
             io.to(socket.id).emit(Events.REMOVED_FROM_POOL);
         }

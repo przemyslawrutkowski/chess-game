@@ -2,7 +2,7 @@ import ServerGame from "../models/ServerGame.js";
 
 export default class GamesRepository {
     private static instance: GamesRepository;
-    public games: ServerGame[];
+    private games: ServerGame[];
 
     private constructor() {
         this.games = [];

@@ -22,9 +22,12 @@ export default class PoolRepository {
         return false;
     }
     removeUser(socketId) {
-        const initialLength = this.pool.length;
-        this.pool = this.pool.filter(u => u.getSocketId() !== socketId);
-        return this.pool.length < initialLength;
+        const index = this.pool.findIndex(u => u.getSocketId() === socketId);
+        if (index !== -1) {
+            this.pool.splice(index, 1);
+            return true;
+        }
+        return false;
     }
     shiftUser() {
         return this.pool.shift();
