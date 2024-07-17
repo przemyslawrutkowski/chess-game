@@ -1,5 +1,6 @@
 export enum GameState {
     InProgress,
     Stalemate,
-    Checkmate
+    Checkmate,
+    Disconnection
 }

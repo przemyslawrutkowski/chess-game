@@ -1,6 +1,7 @@
 import Events from '../../../shared/src/events/Events.js';
 import SocketConnection from '../../src/models/SocketConnection.js';
 import { reconstructGame, reconstructMoveResult } from '../../src/utils/reconstructor.js';
+import { GameState } from '../../../shared/src/enums/GameState.js';
 export default function gameController() {
     try {
         const infoPanel = document.querySelector('info-panel');
@@ -10,7 +11,6 @@ export default function gameController() {
         const socket = SocketConnection.getInstance();
         socket.emit(Events.GET_GAME_STATE);
         socket.once(Events.GAME_STATE, (game) => {
-            console.log(`game_state`);
             const reconstructedGame = reconstructGame(game);
             const chessboard = reconstructedGame.getChessboard();
             const user1 = reconstructedGame.getUser1();
@@ -23,7 +23,6 @@ export default function gameController() {
             chessboardPanel.initialize(chessboard);
         });
         socket.on(Events.GAME_STATE_UPDATE, (moveResult) => {
-            console.log(`game_state_update`);
             const reconstructedMoveResult = reconstructMoveResult(moveResult);
             const oldPosition = reconstructedMoveResult.getOldPosition();
             const newPosition = reconstructedMoveResult.getNewPosition();
@@ -38,8 +37,16 @@ export default function gameController() {
             }
             infoPanel.setScore(score.getLightScore(), score.getDarkScore());
             chessboardPanel.update(oldPosition, newPosition);
+            if (gameState === GameState.Checkmate || gameState === GameState.Stalemate) {
+                socket.off(Events.GAME_STATE_UPDATE);
+                socket.off(Events.OPPONENT_DISCONNECTED);
+            }
         });
-        socket.on(Events.OPPONENT_DISCONNECTED, () => console.log('Opponent disconnected'));
+        socket.on(Events.OPPONENT_DISCONNECTED, () => {
+            infoPanel.setAnnouncement(GameState.Disconnection);
+            socket.off(Events.GAME_STATE_UPDATE);
+            socket.off(Events.OPPONENT_DISCONNECTED);
+        });
     }
     catch (err) {
         console.error(err);

@@ -166,8 +166,10 @@ export default class InfoPanelC extends HTMLElement {
                 this.announcement.innerText = `Stalemate! It's a draw!`;
                 break;
             case GameState.InProgress:
-            default:
                 this.announcement.innerText = `It's ${username} turn...`;
+                break;
+            case GameState.Disconnection:
+                this.announcement.innerText = `You won! Opponent disconnected!`;
                 break;
         }
     }

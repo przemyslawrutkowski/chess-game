@@ -12,8 +12,6 @@ export default class ServerGame {
     private currentOrWinningPlayer: ServerUser | null;
     private score: Score;
     private gameState: GameState;
-    private clientGame: GameDTO;
-
 
     constructor(user1: ServerUser, user2: ServerUser, chessboard: Chessboard) {
         this.user1 = user1;
@@ -22,7 +20,6 @@ export default class ServerGame {
         this.currentOrWinningPlayer = user1;
         this.score = new Score(0, 0);
         this.gameState = GameState.InProgress;
-        this.clientGame = this.setClientGame();
     }
 
     public getUser1(): ServerUser {
@@ -42,10 +39,6 @@ export default class ServerGame {
     }
 
     public getClientGame(): GameDTO {
-        return this.clientGame;
-    }
-
-    private setClientGame(): GameDTO {
         const clientUser1 = this.user1.getClientUser();
         const clientUser2 = this.user2.getClientUser();
         const clientChessboard: ChessboardDTO = this.chessboard.map(row =>
@@ -90,7 +83,6 @@ export default class ServerGame {
                 break;
             case GameState.InProgress:
                 this.currentOrWinningPlayer = this.currentOrWinningPlayer === this.user1 ? this.user2 : this.user1;
-                this.clientGame = this.setClientGame();
                 break;
 
         }
@@ -103,7 +95,6 @@ export default class ServerGame {
     public increaseScore(score: number): void {
         if (this.currentOrWinningPlayer) {
             this.currentOrWinningPlayer.getColor() === PlayerColor.Light ? this.score.increaseLightScore(score) : this.score.increaseDarkScore(score);
-            this.clientGame = this.setClientGame();
         }
     }
 }

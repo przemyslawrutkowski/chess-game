@@ -1,5 +1,4 @@
 import Position from "../../../shared/src/models/Position.js";
-import { MoveType } from "../../../shared/src/enums/MoveType.js";
 import ClientUser from "./ClientUser.js";
 import Score from "../../../shared/src/models/Score.js";
 import { GameState } from "../../../shared/src/enums/GameState.js";

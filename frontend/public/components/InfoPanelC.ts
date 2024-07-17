@@ -168,7 +168,7 @@ export default class InfoPanelC extends HTMLElement {
         opponent2Username.innerText = user2.getUsername();
     }
 
-    public setAnnouncement(gameState?: GameState, username?: string) {
+    public setAnnouncement(gameState: GameState, username?: string) {
         switch (gameState) {
             case GameState.Checkmate:
                 this.announcement.innerText = `Checkmate! ${username} wins!`;
@@ -177,8 +177,10 @@ export default class InfoPanelC extends HTMLElement {
                 this.announcement.innerText = `Stalemate! It's a draw!`;
                 break;
             case GameState.InProgress:
-            default:
                 this.announcement.innerText = `It's ${username} turn...`;
+                break;
+            case GameState.Disconnection:
+                this.announcement.innerText = `You won! Opponent disconnected!`;
                 break;
         }
     }
