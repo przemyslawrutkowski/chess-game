@@ -17,7 +17,7 @@ export default class PoolService {
         return PoolService.instance;
     }
 
-    public getUser(socketId: string) {
+    public getUser(socketId: string): ServerUser | undefined {
         return this.poolRepository.getUser(socketId);
     }
 

@@ -4,7 +4,6 @@ import { GameDTO, MoveResultDTO } from '../../../shared/src/interfaces/DTO.js';
 import InfoPanelC from '../components/InfoPanelC.js';
 import ChessboardPanelC from '../components/ChessboardPanelC.js';
 import { reconstructGame, reconstructMoveResult } from '../../src/utils/reconstructor.js';
-import { GameState } from '../../../shared/src/enums/GameState.js';
 
 export default function gameController() {
     try {
@@ -17,7 +16,7 @@ export default function gameController() {
 
         socket.emit(Events.GET_GAME_STATE);
 
-        socket.on(Events.GAME_STATE, (game: GameDTO) => {
+        socket.once(Events.GAME_STATE, (game: GameDTO) => {
             const reconstructedGame = reconstructGame(game);
 
             const chessboard = reconstructedGame.getChessboard();
@@ -53,6 +52,8 @@ export default function gameController() {
 
             chessboardPanel.update(oldPosition, newPosition);
         });
+
+        socket.on(Events.OPPONENT_DISCONNECTED, () => console.log('Opponent disconnected'));
 
     } catch (err) {
         console.error(err);

@@ -20,41 +20,32 @@ export default function startInit(onSuccess: () => void) {
 
         const socket = SocketConnection.getInstance();
 
+        socket.on(Events.MATCH_FOUND, () => {
+            onSuccess();
+            socket.off(Events.MATCH_FOUND);
+        });
+
         connectButton.addEventListener('click', async (event) => {
             event.preventDefault();
 
             if (buttonStatus === 'Connect') {
                 if (!usernameForm.getUsernameInput()) return;
 
-                //wysylamy zadanie do serwera
                 socket.emit(Events.MATCH, usernameForm.getUsernameInput());
 
-                //zmieniamy status przycisku
                 buttonStatus = 'Disconnect';
 
-                //uwidaczniamy spinner
                 spinner.show();
 
-                //zmieniamy tekst na przycisku
                 connectButton.setStatus(buttonStatus);
 
-                //czekamy na odpowiedz
-                socket.on(Events.MATCH_FOUND, () => onSuccess());
             } else {
-                //zrywamy polaczenie z serwerem
                 socket.emit(Events.REMOVE_FROM_POOL);
-                socket.on(Events.REMOVED_FROM_POOL, () => {
-                    console.log(`Disconnected from the server`);
-                    socket.disconnect();
-                });
 
-                //zmieniamy status przycisku
                 buttonStatus = 'Connect';
 
-                //ukrywamy spinner
                 spinner.hide();
 
-                //zmieniamy tekst na przycisku
                 connectButton.setStatus(buttonStatus);
             }
         });

@@ -248,7 +248,7 @@ export default class ChessService {
             new Position(x - 1, y - 1),
         ];
         return possibleMoves.filter(position => {
-            return this.isPositionValid(position) && !this.isPositionOccupied(socketId, position, chessboard, true);
+            return this.isPositionValid(position) && !this.isPositionOccupied(socketId, position, chessboard);
         });
     }
     getQueenMoves(socketId, position, chessboard) {
@@ -260,7 +260,7 @@ export default class ChessService {
             let x = position.getX() + direction[0];
             let y = position.getY() + direction[1];
             while (this.isPositionValid(new Position(x, y))) {
-                if (!this.isPositionOccupied(socketId, new Position(x, y), chessboard, true)) {
+                if (!this.isPositionOccupied(socketId, new Position(x, y), chessboard)) {
                     possibleMoves.push(new Position(x, y));
                 }
                 else {
@@ -275,7 +275,7 @@ export default class ChessService {
             let x = position.getX() + direction[0];
             let y = position.getY() + direction[1];
             while (this.isPositionValid(new Position(x, y))) {
-                if (!this.isPositionOccupied(socketId, new Position(x, y), chessboard, true)) {
+                if (!this.isPositionOccupied(socketId, new Position(x, y), chessboard)) {
                     possibleMoves.push(new Position(x, y));
                 }
                 else {
@@ -296,7 +296,7 @@ export default class ChessService {
             let x = position.getX() + direction[0];
             let y = position.getY() + direction[1];
             while (this.isPositionValid(new Position(x, y))) {
-                if (!this.isPositionOccupied(socketId, new Position(x, y), chessboard, true)) {
+                if (!this.isPositionOccupied(socketId, new Position(x, y), chessboard)) {
                     possibleMoves.push(new Position(x, y));
                 }
                 else {
@@ -317,7 +317,7 @@ export default class ChessService {
             let x = position.getX() + direction[0];
             let y = position.getY() + direction[1];
             while (this.isPositionValid(new Position(x, y))) {
-                if (!this.isPositionOccupied(socketId, new Position(x, y), chessboard, true)) {
+                if (!this.isPositionOccupied(socketId, new Position(x, y), chessboard)) {
                     possibleMoves.push(new Position(x, y));
                 }
                 else {
@@ -343,7 +343,7 @@ export default class ChessService {
             new Position(x - 1, y - 2),
         ];
         return possibleMoves.filter(position => {
-            return this.isPositionValid(position) && !this.isPositionOccupied(socketId, position, chessboard, true);
+            return this.isPositionValid(position) && !this.isPositionOccupied(socketId, position, chessboard);
         });
     }
     getPawnMoves(socketId, position, chessboard) {
@@ -362,7 +362,7 @@ export default class ChessService {
         const possibleMoves = [];
         possibleMoves.push(doubleMove, singleMove, ...diagonalMoves);
         return possibleMoves.filter(position => {
-            return this.isPositionValid(position) && !this.isPositionOccupied(socketId, position, chessboard, true);
+            return this.isPositionValid(position) && !this.isPositionOccupied(socketId, position, chessboard);
         });
     }
     moveChessPiece(move, chessboard) {

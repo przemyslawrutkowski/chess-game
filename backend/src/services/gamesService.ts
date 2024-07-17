@@ -26,25 +26,42 @@ export default class GamesService {
         return GamesService.instance;
     }
 
-    public matchUsers(): ServerGame | null {
-        const poolSize = this.poolService.getPoolSize();
-        if (poolSize < 2) return null;
+    public matchUsers(): boolean {
+        if (this.poolService.getPoolSize() < 2) return false;
 
         const user1 = this.poolService.shiftUser();
         const user2 = this.poolService.shiftUser();
-        if (user1 && user2) {
-            const chessboard = this.chessService.initilizeChessboard(user1, user2);
-            const game = new ServerGame(user1, user2, chessboard);
-            const result = this.gamesRepository.addGame(game);
-            if (result) return game;
-        }
-        return null;
+        if (!user1 || !user2) return false;
+
+        const chessboard = this.chessService.initilizeChessboard(user1, user2);
+        const game = new ServerGame(user1, user2, chessboard);
+        return this.gamesRepository.addGame(game);
     }
 
     public getGameState(socketId: string): ServerGame | null {
         const game = this.gamesRepository.getGameState(socketId);
         if (game) return game;
         return null;
+    }
+
+    public removeGame(socketId: string): boolean {
+        return this.gamesRepository.removeGame(socketId);
+    }
+
+    public getOpponentSocketId(socketId: string): string | null {
+        const game = this.getGameState(socketId);
+        if (!game) return null;
+        const user1SocketId = game.getUser1().getSocketId();
+        const user2SocketId = game.getUser2().getSocketId();
+        return socketId === user1SocketId ? user2SocketId : user1SocketId;
+    }
+
+    public getGameSocketIds(socketId: string): [string, string] | null {
+        const game = this.getGameState(socketId);
+        if (!game) return null;
+        const user1SocketId = game.getUser1().getSocketId();
+        const user2SocketId = game.getUser2().getSocketId();
+        return [user1SocketId, user2SocketId];
     }
 
     private validateTurn(socketId: string): boolean {
@@ -76,7 +93,7 @@ export default class GamesService {
         const currentOrWinningPlayer = game.getCurrentOrWinningPlayer();
 
         if (gameState === GameState.Checkmate || gameState === GameState.Stalemate) {
-            if (!this.gamesRepository.removeGame(socketId)) throw new Error('We could not remove the game');
+            if (!this.removeGame(socketId)) throw new Error('We could not remove the game');
         }
 
         const moveResult: MoveResultDTO = {

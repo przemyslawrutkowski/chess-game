@@ -10,8 +10,8 @@ interface Page {
 interface NavigationModule {
     pages: Page[];
     loadPage: (href: string, pushToHistory: boolean) => void;
-    fetchPage: (href: string, path: string) => void;
-    init: () => void;
+    fetchPage: (href: string, path: string) => Promise<void>;
+    init: () => Promise<void>;
 }
 
 const navigationModule: NavigationModule = {
@@ -21,28 +21,39 @@ const navigationModule: NavigationModule = {
         const pageToLoad = this.pages.find(page => page.href === href);
         if (main && pageToLoad) {
             main.innerHTML = pageToLoad.content;
-            if (pushToHistory) window.history.pushState({ path: pageToLoad.path }, '', pageToLoad.path);
+            if (pushToHistory) window.history.pushState(null, '', pageToLoad.href);
 
             if (pageToLoad.href === '/') {
-                const onSuccess = () => this.loadPage('/chessboard', false);
+                const onSuccess = () => this.loadPage('/game', true);
                 startInit(onSuccess);
-            } else if (pageToLoad.href === '/chessboard') {
+            } else if (pageToLoad.href === '/game') {
                 gameController();
             }
         }
     },
-    fetchPage: function (path: string, href: string) {
-        return fetch(path)
-            .then(response => response.text())
-            .then(content => this.pages.push({ path, href, content }));
+    fetchPage: async function (path: string, href: string) {
+        try {
+            const response = await fetch(path);
+            const content = await response.text();
+            this.pages.push({ path, href, content });
+        } catch (err) {
+            console.error("Failed to fetch page:", err);
+        }
     },
-    init: function () {
-        Promise.all([
+    init: async function () {
+        await Promise.all([
             this.fetchPage('/html/startSection.html', '/'),
-            this.fetchPage('/html/chessboardSection.html', '/chessboard')
-        ]).then(() => {
-            this.loadPage('/', false);
-            window.addEventListener('popstate', () => this.loadPage('/', false));
+            this.fetchPage('/html/gameSection.html', '/game')
+        ]);
+
+        window.history.replaceState(null, '', '/');
+        this.loadPage('/', false);
+
+        window.addEventListener('popstate', () => {
+            if (window.location.pathname !== '/') {
+                window.history.replaceState(null, '', '/');
+                this.loadPage('/', false);
+            }
         });
     }
 };

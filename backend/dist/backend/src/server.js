@@ -84,18 +84,16 @@ io.on("connection", (socket) => {
         if (addResult) {
             const matchResult = gamesService.matchUsers();
             if (matchResult) {
-                io.to(matchResult.getUser1().getSocketId()).emit(Events.MATCH_FOUND);
-                io.to(matchResult.getUser2().getSocketId()).emit(Events.MATCH_FOUND);
+                const socketIds = gamesService.getGameSocketIds(socket.id);
+                if (socketIds) {
+                    io.to(socketIds[0]).emit(Events.MATCH_FOUND);
+                    io.to(socketIds[1]).emit(Events.MATCH_FOUND);
+                }
             }
         }
     });
     socket.on(Events.REMOVE_FROM_POOL, () => {
-        console.log(`Before: ${JSON.stringify(poolService.poolRepository.pool)}`);
-        const result = poolService.removeUser(socket.id);
-        console.log(`After: ${JSON.stringify(poolService.poolRepository.pool)}`);
-        if (result) {
-            io.to(socket.id).emit(Events.REMOVED_FROM_POOL);
-        }
+        poolService.removeUser(socket.id);
     });
     socket.on(Events.GET_GAME_STATE, () => {
         const result = gamesService.getGameState(socket.id);
@@ -104,12 +102,22 @@ io.on("connection", (socket) => {
         }
     });
     socket.on(Events.UPDATE_GAME_STATE, (move) => {
-        const game = gamesService.getGameState(socket.id);
-        if (game) {
+        const socketIds = gamesService.getGameSocketIds(socket.id);
+        if (socketIds) {
             const moveResult = gamesService.moveChessPiece(socket.id, move);
             if (moveResult) {
-                io.to(game.getUser1().getSocketId()).emit(Events.GAME_STATE_UPDATE, moveResult);
-                io.to(game.getUser2().getSocketId()).emit(Events.GAME_STATE_UPDATE, moveResult);
+                io.to(socketIds[0]).emit(Events.GAME_STATE_UPDATE, moveResult);
+                io.to(socketIds[1]).emit(Events.GAME_STATE_UPDATE, moveResult);
+            }
+        }
+    });
+    socket.on('disconnect', () => {
+        const poolResult = poolService.removeUser(socket.id);
+        if (!poolResult) {
+            const opponentSocketId = gamesService.getOpponentSocketId(socket.id);
+            const gamesResult = gamesService.removeGame(socket.id);
+            if (gamesResult && opponentSocketId) {
+                io.to(opponentSocketId).emit(Events.OPPONENT_DISCONNECTED);
             }
         }
     });

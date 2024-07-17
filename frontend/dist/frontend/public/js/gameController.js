@@ -9,7 +9,8 @@ export default function gameController() {
             throw new Error('Page content was not generated correctly');
         const socket = SocketConnection.getInstance();
         socket.emit(Events.GET_GAME_STATE);
-        socket.on(Events.GAME_STATE, (game) => {
+        socket.once(Events.GAME_STATE, (game) => {
+            console.log(`game_state`);
             const reconstructedGame = reconstructGame(game);
             const chessboard = reconstructedGame.getChessboard();
             const user1 = reconstructedGame.getUser1();
@@ -22,6 +23,7 @@ export default function gameController() {
             chessboardPanel.initialize(chessboard);
         });
         socket.on(Events.GAME_STATE_UPDATE, (moveResult) => {
+            console.log(`game_state_update`);
             const reconstructedMoveResult = reconstructMoveResult(moveResult);
             const oldPosition = reconstructedMoveResult.getOldPosition();
             const newPosition = reconstructedMoveResult.getNewPosition();
@@ -37,6 +39,7 @@ export default function gameController() {
             infoPanel.setScore(score.getLightScore(), score.getDarkScore());
             chessboardPanel.update(oldPosition, newPosition);
         });
+        socket.on(Events.OPPONENT_DISCONNECTED, () => console.log('Opponent disconnected'));
     }
     catch (err) {
         console.error(err);
