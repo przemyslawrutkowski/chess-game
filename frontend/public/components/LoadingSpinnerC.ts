@@ -34,11 +34,11 @@ export default class LoadingSpinnerC extends HTMLElement {
         shadowRoot.adoptedStyleSheets = [globalStyle];
     }
 
-    show() {
+    public show() {
         this.div.style.display = 'block';
     }
 
-    hide() {
+    public hide() {
         this.div.style.display = 'none';
     }
 }

@@ -24,6 +24,7 @@ const navigationModule: NavigationModule = {
             if (pushToHistory) window.history.pushState(null, '', pageToLoad.href);
 
             if (pageToLoad.href === '/') {
+                window.history.replaceState(null, '', '/');
                 const onSuccess = () => this.loadPage('/game', true);
                 startInit(onSuccess);
             } else if (pageToLoad.href === '/game') {
@@ -46,12 +47,10 @@ const navigationModule: NavigationModule = {
             this.fetchPage('/html/gameSection.html', '/game')
         ]);
 
-        window.history.replaceState(null, '', '/');
         this.loadPage('/', false);
 
         window.addEventListener('popstate', () => {
             if (window.location.pathname !== '/') {
-                window.history.replaceState(null, '', '/');
                 this.loadPage('/', false);
             }
         });
@@ -59,3 +58,5 @@ const navigationModule: NavigationModule = {
 };
 
 document.addEventListener('DOMContentLoaded', () => navigationModule.init());
+
+export default navigationModule;

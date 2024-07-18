@@ -10,6 +10,9 @@ const Events = {
     UPDATE_GAME_STATE: "update_game_state",
     GAME_STATE_UPDATE: "game_state_update",
 
-    OPPONENT_DISCONNECTED: "opponent_disconnected"
+    OPPONENT_DISCONNECTED: "opponent_disconnected",
+
+    SELF_DISCONNECT: "self_disconnect",
+    SELF_DISCONNECTED: "self_disconnected"
 }
 export default Events;

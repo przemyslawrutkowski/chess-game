@@ -1,6 +1,9 @@
 import globalStyle from '../js/globalStyles.js';
 import { PlayerColor } from '../../../shared/src/enums/PlayerColor.js';
 import { GameState } from '../../../shared/src/enums/GameState.js';
+import SocketConnection from '../../src/models/SocketConnection.js';
+import Events from '../../../shared/src/events/Events.js';
+import navigationModule from '../js/navigation.js';
 const template = document.createElement('template');
 template.innerHTML = `
     <style>
@@ -83,6 +86,17 @@ template.innerHTML = `
         .chess-piece-dark {
             fill: var(--chess-piece-b-color);
         }
+
+        .action-menu{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            width: 100%;
+        }
+
+        button {
+            width: 100px;
+        }
     </style>
 
     <div class="info-panel">
@@ -121,6 +135,11 @@ template.innerHTML = `
             </div>
         </div>
         <p class="announcement"></p>
+        <div class="action-menu">
+            <button class="disconnect-button">Disconnect</button>
+            <button class="next-opponent-button">Next Opponent</button>
+        </div>
+        <loading-spinner></<loading-spinner>
     </div>
 `;
 export default class InfoPanelC extends HTMLElement {
@@ -128,6 +147,9 @@ export default class InfoPanelC extends HTMLElement {
     announcement;
     lightScore;
     darkScore;
+    disconnectButton;
+    nextOpponentButton;
+    socket;
     constructor() {
         super();
         const clone = template.content.cloneNode(true);
@@ -135,9 +157,23 @@ export default class InfoPanelC extends HTMLElement {
         this.announcement = clone.querySelector('.announcement');
         this.lightScore = clone.querySelector('.light-score');
         this.darkScore = clone.querySelector('.dark-score');
+        this.disconnectButton = clone.querySelector('.action-menu .disconnect-button');
+        this.nextOpponentButton = clone.querySelector('.action-menu .next-opponent-button');
         const shadowRoot = this.attachShadow({ mode: 'open' });
         shadowRoot.appendChild(clone);
         shadowRoot.adoptedStyleSheets = [globalStyle];
+        this.socket = SocketConnection.getInstance();
+        this.disconnectButton.addEventListener('click', () => {
+            this.socket.emit(Events.SELF_DISCONNECT);
+            this.socket.on(Events.SELF_DISCONNECTED, () => {
+                navigationModule.loadPage('/', false);
+                this.socket.off(Events.SELF_DISCONNECTED);
+            });
+        });
+        this.nextOpponentButton.addEventListener('click', () => {
+            //Disconnect from the game
+            //Try to match with another user
+        });
     }
     initialize(user1, user2) {
         const opponent1 = this.opponents.item(0);

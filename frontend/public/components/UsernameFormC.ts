@@ -69,7 +69,7 @@ export default class UsernameFormC extends HTMLElement {
         shadowRoot.adoptedStyleSheets = [globalStyle];
     }
 
-    getUsernameInput() {
+    public getUsernameInput() {
         return this.input.value.trim();
 
     }

@@ -2,6 +2,10 @@ import globalStyle from '../js/globalStyles.js';
 import ClientUser from '../../src/models/ClientUser.js';
 import { PlayerColor } from '../../../shared/src/enums/PlayerColor.js';
 import { GameState } from '../../../shared/src/enums/GameState.js';
+import LoadingSpinnerC from './LoadingSpinnerC.js';
+import SocketConnection from '../../src/models/SocketConnection.js';
+import Events from '../../../shared/src/events/Events.js';
+import navigationModule from '../js/navigation.js';
 
 const template = document.createElement('template');
 template.innerHTML = `
@@ -85,6 +89,17 @@ template.innerHTML = `
         .chess-piece-dark {
             fill: var(--chess-piece-b-color);
         }
+
+        .action-menu{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            width: 100%;
+        }
+
+        button {
+            width: 100px;
+        }
     </style>
 
     <div class="info-panel">
@@ -123,6 +138,11 @@ template.innerHTML = `
             </div>
         </div>
         <p class="announcement"></p>
+        <div class="action-menu">
+            <button class="disconnect-button">Disconnect</button>
+            <button class="next-opponent-button">Next Opponent</button>
+        </div>
+        <loading-spinner></<loading-spinner>
     </div>
 `;
 
@@ -131,6 +151,9 @@ export default class InfoPanelC extends HTMLElement {
     private announcement: HTMLParagraphElement;
     private lightScore: HTMLParagraphElement;
     private darkScore: HTMLParagraphElement;
+    private disconnectButton: HTMLButtonElement;
+    private nextOpponentButton: HTMLButtonElement;
+    private socket: any;
 
 
     constructor() {
@@ -140,9 +163,26 @@ export default class InfoPanelC extends HTMLElement {
         this.announcement = clone.querySelector('.announcement') as HTMLParagraphElement;
         this.lightScore = clone.querySelector('.light-score') as HTMLParagraphElement;
         this.darkScore = clone.querySelector('.dark-score') as HTMLParagraphElement;
+        this.disconnectButton = clone.querySelector('.action-menu .disconnect-button') as HTMLButtonElement;
+        this.nextOpponentButton = clone.querySelector('.action-menu .next-opponent-button') as HTMLButtonElement;
         const shadowRoot = this.attachShadow({ mode: 'open' });
         shadowRoot.appendChild(clone);
         shadowRoot.adoptedStyleSheets = [globalStyle];
+
+        this.socket = SocketConnection.getInstance();
+
+        this.disconnectButton.addEventListener('click', () => {
+            this.socket.emit(Events.SELF_DISCONNECT);
+            this.socket.on(Events.SELF_DISCONNECTED, () => {
+                navigationModule.loadPage('/', false);
+                this.socket.off(Events.SELF_DISCONNECTED);
+            });
+        });
+
+        this.nextOpponentButton.addEventListener('click', () => {
+            //Disconnect from the game
+            //Try to match with another user
+        });
     }
 
     public initialize(user1: ClientUser, user2: ClientUser) {

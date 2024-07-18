@@ -139,6 +139,16 @@ io.on("connection", (socket) => {
             }
         }
     })
+
+    socket.on(Events.SELF_DISCONNECT, () => {
+        const opponentSocketId = gamesService.getOpponentSocketId(socket.id);
+        gamesService.removeGame(socket.id);
+        io.to(socket.id).emit(Events.SELF_DISCONNECTED);
+        if (opponentSocketId) {
+            io.to(opponentSocketId).emit(Events.OPPONENT_DISCONNECTED);
+        }
+
+    })
 });
 
 httpServer.listen(port, () => {
