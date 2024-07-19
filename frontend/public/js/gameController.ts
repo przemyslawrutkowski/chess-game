@@ -59,10 +59,9 @@ export default function gameController() {
             }
         });
 
-        socket.on(Events.OPPONENT_DISCONNECTED, () => {
+        socket.once(Events.OPPONENT_DISCONNECTED, () => {
             infoPanel.setAnnouncement(GameState.Disconnection);
             socket.off(Events.GAME_STATE_UPDATE);
-            socket.off(Events.OPPONENT_DISCONNECTED);
         });
 
     } catch (err) {

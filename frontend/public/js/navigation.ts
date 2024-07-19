@@ -7,16 +7,10 @@ interface Page {
     content: string;
 }
 
-interface NavigationModule {
-    pages: Page[];
-    loadPage: (href: string, pushToHistory: boolean) => void;
-    fetchPage: (href: string, path: string) => Promise<void>;
-    init: () => Promise<void>;
-}
+class NavigationModule {
+    private pages: Page[] = [];
 
-const navigationModule: NavigationModule = {
-    pages: [],
-    loadPage: function (href: string, pushToHistory: boolean) {
+    public loadPage(href: string, pushToHistory: boolean): void {
         const main = document.querySelector('main');
         const pageToLoad = this.pages.find(page => page.href === href);
         if (main && pageToLoad) {
@@ -25,14 +19,14 @@ const navigationModule: NavigationModule = {
 
             if (pageToLoad.href === '/') {
                 window.history.replaceState(null, '', '/');
-                const onSuccess = () => this.loadPage('/game', true);
-                startInit(onSuccess);
+                startInit();
             } else if (pageToLoad.href === '/game') {
                 gameController();
             }
         }
-    },
-    fetchPage: async function (path: string, href: string) {
+    }
+
+    private async fetchPage(path: string, href: string) {
         try {
             const response = await fetch(path);
             const content = await response.text();
@@ -40,8 +34,9 @@ const navigationModule: NavigationModule = {
         } catch (err) {
             console.error("Failed to fetch page:", err);
         }
-    },
-    init: async function () {
+    }
+
+    public async init() {
         await Promise.all([
             this.fetchPage('/html/startSection.html', '/'),
             this.fetchPage('/html/gameSection.html', '/game')
@@ -56,6 +51,8 @@ const navigationModule: NavigationModule = {
         });
     }
 };
+
+const navigationModule = new NavigationModule();
 
 document.addEventListener('DOMContentLoaded', () => navigationModule.init());
 

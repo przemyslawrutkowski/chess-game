@@ -93,10 +93,6 @@ template.innerHTML = `
             justify-content: space-around;
             width: 100%;
         }
-
-        button {
-            width: 100px;
-        }
     </style>
 
     <div class="info-panel">
@@ -136,8 +132,8 @@ template.innerHTML = `
         </div>
         <p class="announcement"></p>
         <div class="action-menu">
-            <button class="disconnect-button">Disconnect</button>
-            <button class="next-opponent-button">Next Opponent</button>
+            <custom-button class="disconnect-button"></custom-button>
+            <custom-button class="next-opponent-button"></custom-button>
         </div>
         <loading-spinner></<loading-spinner>
     </div>
@@ -149,6 +145,7 @@ export default class InfoPanelC extends HTMLElement {
     darkScore;
     disconnectButton;
     nextOpponentButton;
+    spinner;
     socket;
     constructor() {
         super();
@@ -159,20 +156,53 @@ export default class InfoPanelC extends HTMLElement {
         this.darkScore = clone.querySelector('.dark-score');
         this.disconnectButton = clone.querySelector('.action-menu .disconnect-button');
         this.nextOpponentButton = clone.querySelector('.action-menu .next-opponent-button');
+        this.spinner = clone.querySelector('loading-spinner');
         const shadowRoot = this.attachShadow({ mode: 'open' });
         shadowRoot.appendChild(clone);
         shadowRoot.adoptedStyleSheets = [globalStyle];
         this.socket = SocketConnection.getInstance();
-        this.disconnectButton.addEventListener('click', () => {
-            this.socket.emit(Events.SELF_DISCONNECT);
-            this.socket.on(Events.SELF_DISCONNECTED, () => {
-                navigationModule.loadPage('/', false);
-                this.socket.off(Events.SELF_DISCONNECTED);
-            });
+        let nextOpponentButtonStatus = 'Next Opponent';
+        const disconnectButtonStatus = 'Disconnect';
+        this.disconnectButton.setStatus(disconnectButtonStatus);
+        this.nextOpponentButton.setStatus(nextOpponentButtonStatus);
+        const handleDisconnect = () => {
+            navigationModule.loadPage('/', false);
+            this.socket.off(Events.SELF_DISCONNECTED);
+        };
+        const handleDisconnectForNextOpponent = () => {
+            const username = sessionStorage.getItem('username');
+            if (!username)
+                throw new Error('Username not found in session storage');
+            this.socket.emit(Events.MATCH, username);
+        };
+        this.socket.once(Events.MATCH_FOUND, () => {
+            navigationModule.loadPage('/game', true);
+            this.socket.off(Events.SELF_DISCONNECTED);
         });
-        this.nextOpponentButton.addEventListener('click', () => {
-            //Disconnect from the game
-            //Try to match with another user
+        this.disconnectButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            console.log('clicked disconnect');
+            this.socket.off(Events.SELF_DISCONNECTED);
+            this.socket.on(Events.SELF_DISCONNECTED, handleDisconnect);
+            this.socket.emit(Events.SELF_DISCONNECT);
+        });
+        this.nextOpponentButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            console.log(this.socket.id);
+            if (nextOpponentButtonStatus === 'Next Opponent') {
+                this.socket.off(Events.SELF_DISCONNECTED);
+                this.socket.on(Events.SELF_DISCONNECTED, handleDisconnectForNextOpponent);
+                this.socket.emit(Events.SELF_DISCONNECT);
+                nextOpponentButtonStatus = 'Searching...';
+                this.spinner.show();
+                this.nextOpponentButton.setStatus(nextOpponentButtonStatus);
+            }
+            else {
+                this.socket.emit(Events.REMOVE_FROM_POOL);
+                nextOpponentButtonStatus = 'Next Opponent';
+                this.spinner.hide();
+                this.nextOpponentButton.setStatus(nextOpponentButtonStatus);
+            }
         });
     }
     initialize(user1, user2) {

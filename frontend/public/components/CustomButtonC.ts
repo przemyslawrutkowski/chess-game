@@ -2,10 +2,10 @@ import globalStyle from '../js/globalStyles.js';
 
 const template = document.createElement('template');
 template.innerHTML = `
-    <button type="submit">Connect</button>
+    <button></button>
 `;
 
-export default class ConnectButtonC extends HTMLElement {
+export default class CustomButtonC extends HTMLElement {
     private button: HTMLButtonElement;
 
     constructor() {
@@ -17,9 +17,9 @@ export default class ConnectButtonC extends HTMLElement {
         shadowRoot.adoptedStyleSheets = [globalStyle];
     }
 
-    public setStatus(status: 'Connect' | 'Disconnect') {
+    public setStatus(status: string) {
         this.button.innerText = status;
     }
 }
 
-customElements.define('connect-button', ConnectButtonC);
+customElements.define('custom-button', CustomButtonC);

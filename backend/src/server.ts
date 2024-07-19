@@ -138,7 +138,7 @@ io.on("connection", (socket) => {
                 io.to(opponentSocketId).emit(Events.OPPONENT_DISCONNECTED);
             }
         }
-    })
+    });
 
     socket.on(Events.SELF_DISCONNECT, () => {
         const opponentSocketId = gamesService.getOpponentSocketId(socket.id);
@@ -148,7 +148,7 @@ io.on("connection", (socket) => {
             io.to(opponentSocketId).emit(Events.OPPONENT_DISCONNECTED);
         }
 
-    })
+    });
 });
 
 httpServer.listen(port, () => {

@@ -2,27 +2,28 @@ import Events from '../../../shared/src/events/Events.js';
 import SocketConnection from '../../src/models/SocketConnection.js';
 import LoadingSpinnerC from '../components/LoadingSpinnerC.js';
 import UsernameFormC from '../components/UsernameFormC.js';
-import ConnectButtonC from '../components/ConnectButtonC.js';
+import CustomButtonC from '../components/CustomButtonC.js';
+import navigationModule from './navigation.js';
 
-export default function startInit(onSuccess: () => void) {
+export default function startInit() {
     try {
         const usernameForm = document.querySelector('username-form') as UsernameFormC;
-        const shadowRoot = usernameForm.shadowRoot as ShadowRoot;
-        let connectButton: ConnectButtonC | undefined;
+        const shadowRoot = usernameForm.shadowRoot;
+        let connectButton: CustomButtonC | undefined;
         if (shadowRoot) {
-            connectButton = shadowRoot.querySelector('connect-button') as ConnectButtonC;
+            connectButton = shadowRoot.querySelector('custom-button') as CustomButtonC;
         }
         const spinner = document.querySelector('loading-spinner') as LoadingSpinnerC;
 
         if (!usernameForm || !connectButton || !spinner) throw new Error('Page content was not generated correctly');
 
         let buttonStatus: 'Connect' | 'Disconnect' = 'Connect';
+        connectButton.setStatus(buttonStatus);
 
         const socket = SocketConnection.getInstance();
 
-        socket.on(Events.MATCH_FOUND, () => {
-            onSuccess();
-            socket.off(Events.MATCH_FOUND);
+        socket.once(Events.MATCH_FOUND, () => {
+            navigationModule.loadPage('/game', true);
         });
 
         connectButton.addEventListener('click', async (event) => {
@@ -32,6 +33,8 @@ export default function startInit(onSuccess: () => void) {
                 if (!usernameForm.getUsernameInput()) return;
 
                 socket.emit(Events.MATCH, usernameForm.getUsernameInput());
+
+                sessionStorage.setItem('username', usernameForm.getUsernameInput());
 
                 buttonStatus = 'Disconnect';
 

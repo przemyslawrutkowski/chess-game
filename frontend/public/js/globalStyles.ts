@@ -10,6 +10,8 @@ h1, h2, h3, h4, h5, h6, p {
 }
 
 button {
+    height: 100%;
+    width: 100px;
     border: 3px solid var(--b-color);
     border-radius: 0.5rem;
     font-size: 1rem;
