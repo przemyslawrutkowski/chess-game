@@ -23,4 +23,8 @@ export default class ChessPiece {
     public getMovementStrategy(): MovementStrategy {
         return this.movementStrategy;
     }
+
+    public setMovementStrategy(movementStrategy: MovementStrategy): void {
+        this.movementStrategy = movementStrategy;
+    }
 }

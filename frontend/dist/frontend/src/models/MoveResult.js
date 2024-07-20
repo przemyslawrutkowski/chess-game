@@ -4,12 +4,14 @@ export default class MoveResult {
     score;
     currentOrWinningPlayer;
     gameState;
-    constructor(oldPostion, newPosition, score, currentOrWinningPlayer, gameState) {
+    newMovementStrategy;
+    constructor(oldPostion, newPosition, score, currentOrWinningPlayer, gameState, newMovementStrategy) {
         this.oldPostion = oldPostion;
         this.newPosition = newPosition;
         this.score = score;
         this.currentOrWinningPlayer = currentOrWinningPlayer;
         this.gameState = gameState;
+        this.newMovementStrategy = newMovementStrategy;
     }
     getOldPosition() {
         return this.oldPostion;
@@ -25,5 +27,8 @@ export default class MoveResult {
     }
     getGameState() {
         return this.gameState;
+    }
+    getNewMovementStrategy() {
+        return this.newMovementStrategy;
     }
 }

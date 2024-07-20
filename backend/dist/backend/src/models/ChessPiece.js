@@ -25,4 +25,7 @@ export default class ChessPiece {
     setIsFirstMove(isFirstMove) {
         this.isFirstMove = isFirstMove;
     }
+    setMovementStrategy(movementStrategy) {
+        this.movementStrategy = movementStrategy;
+    }
 }

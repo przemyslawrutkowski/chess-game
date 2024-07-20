@@ -42,6 +42,7 @@ export default function gameController() {
             const score = reconstructedMoveResult.getScore();
             const currentOrWinningPlayer = reconstructedMoveResult.getCurrentOrWinningPlayer();
             const gameState = reconstructedMoveResult.getGameState();
+            const newMovementStrategy = reconstructedMoveResult.getNewMovementStrategy();
 
             if (currentOrWinningPlayer) {
                 infoPanel.setAnnouncement(gameState, currentOrWinningPlayer.getUsername());
@@ -51,7 +52,7 @@ export default function gameController() {
 
             infoPanel.setScore(score.getLightScore(), score.getDarkScore());
 
-            chessboardPanel.update(oldPosition, newPosition);
+            chessboardPanel.update(oldPosition, newPosition, newMovementStrategy);
 
             if (gameState === GameState.Checkmate || gameState === GameState.Stalemate) {
                 socket.off(Events.GAME_STATE_UPDATE);

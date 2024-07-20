@@ -7,6 +7,7 @@ import MoveResult from '../../src/models/MoveResult.js';
 import Position from '../../../shared/src/models/Position.js';
 import Score from '../../../shared/src/models/Score.js';
 import { GameState } from '../../../shared/src/enums/GameState.js';
+import { MovementStrategy } from '../../../shared/src/enums/MovementStrategy.js';
 
 
 export function reconstructGame(game: GameDTO): ClientGame {
@@ -40,11 +41,12 @@ export function reconstructMoveResult(moveResult: MoveResultDTO): MoveResult {
     const score: ScoreDTO = moveResult.score;
     const currentOrWinningPlayer: UserDTO | null = moveResult.currentOrWinningPlayer;
     const gameState: GameState = moveResult.gameState;
+    const newMovementStrategy: MovementStrategy | null = moveResult.newMovementStrategy;
 
     const reconstructedOldPosition = new Position(oldPosition.x, oldPosition.y);
     const reconstructedNewPosition = new Position(newPosition.x, newPosition.y);
     const reconstructedScore = new Score(score.lightScore, score.darkScore);
     const reconstructedCurrentOrWinningPlayer = currentOrWinningPlayer ? new ClientUser(currentOrWinningPlayer.username, currentOrWinningPlayer.color) : null;
 
-    return new MoveResult(reconstructedOldPosition, reconstructedNewPosition, reconstructedScore, reconstructedCurrentOrWinningPlayer, gameState);
+    return new MoveResult(reconstructedOldPosition, reconstructedNewPosition, reconstructedScore, reconstructedCurrentOrWinningPlayer, gameState, newMovementStrategy);
 }

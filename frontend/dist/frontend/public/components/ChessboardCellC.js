@@ -74,24 +74,29 @@ export default class ChessboardCellC extends HTMLElement {
             const oldPosition = moveData;
             const newPostition = { x: this.getXPosition(), y: this.getYPosition() };
             const move = { oldPosition: oldPosition, newPosition: newPostition, newMovementStrategy: null };
-            this.socket.emit(Events.CHECK_PAWN_PROMOTION, move);
-            this.socket.once(Events.PAWN_PROMOTION_RESULT, (promotion) => {
-                if (promotion) {
-                    const customEvent = new CustomEvent('pawnPromotion', {
-                        detail: {
-                            callback: (movementStrategy) => {
-                                move.newMovementStrategy = movementStrategy;
-                                this.socket.emit(Events.UPDATE_GAME_STATE, move);
-                            }
-                        },
-                        bubbles: true,
-                        composed: true
-                    });
-                    this.dispatchEvent(customEvent);
-                }
-                else {
-                    this.socket.emit(Events.UPDATE_GAME_STATE, move);
-                }
+            this.socket.emit(Events.IS_MOVE_VALID, move);
+            this.socket.once(Events.MOVE_VALIDATION_RESULT, (valid) => {
+                if (!valid)
+                    return;
+                this.socket.emit(Events.CHECK_PAWN_PROMOTION, move);
+                this.socket.once(Events.PAWN_PROMOTION_RESULT, (promotion) => {
+                    if (promotion) {
+                        const customEvent = new CustomEvent('pawnPromotion', {
+                            detail: {
+                                callback: (movementStrategy) => {
+                                    move.newMovementStrategy = movementStrategy;
+                                    this.socket.emit(Events.UPDATE_GAME_STATE, move);
+                                }
+                            },
+                            bubbles: true,
+                            composed: true
+                        });
+                        this.dispatchEvent(customEvent);
+                    }
+                    else {
+                        this.socket.emit(Events.UPDATE_GAME_STATE, move);
+                    }
+                });
             });
         }
     }

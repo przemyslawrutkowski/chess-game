@@ -67,17 +67,15 @@ export default class GamesService {
         const game = this.getGameState(socketId);
         if (!game)
             return null;
-        console.log(JSON.stringify(move));
         const oldPosition = new Position(move.oldPosition.x, move.oldPosition.y);
         const newPosition = new Position(move.newPosition.x, move.newPosition.y);
         const reconstructedMove = new Move(oldPosition, newPosition, null);
         const chessboard = game.getChessboard();
-        const isTurnValid = this.validateTurn(socketId);
-        const isMoveValid = this.chessService.isMoveValid(socketId, oldPosition, newPosition, chessboard);
-        if (!isTurnValid || !isMoveValid)
-            return null;
+        const newMovementStrategy = move.newMovementStrategy;
         const scoreIncrease = this.chessService.moveChessPiece(reconstructedMove, chessboard);
         game.increaseScore(scoreIncrease);
+        if (newMovementStrategy)
+            this.chessService.promotePawn(newPosition, newMovementStrategy, chessboard);
         const gameState = this.chessService.checkGameState(socketId, chessboard);
         game.updateCurrentPlayerOrWinner(gameState);
         const currentOrWinningPlayer = game.getCurrentOrWinningPlayer();
@@ -90,7 +88,8 @@ export default class GamesService {
             newPosition: move.newPosition,
             score: game.getClientScore(),
             currentOrWinningPlayer: currentOrWinningPlayer ? currentOrWinningPlayer.getClientUser() : null,
-            gameState: gameState
+            gameState: gameState,
+            newMovementStrategy: newMovementStrategy
         };
         return moveResult;
     }
@@ -101,10 +100,17 @@ export default class GamesService {
         const oldPosition = new Position(move.oldPosition.x, move.oldPosition.y);
         const newPosition = new Position(move.newPosition.x, move.newPosition.y);
         const chessboard = game.getChessboard();
+        return this.chessService.checkForPawnPromotion(oldPosition, newPosition, chessboard);
+    }
+    isMoveValid(socketId, move) {
+        const game = this.getGameState(socketId);
+        if (!game)
+            return false;
+        const oldPosition = new Position(move.oldPosition.x, move.oldPosition.y);
+        const newPosition = new Position(move.newPosition.x, move.newPosition.y);
+        const chessboard = game.getChessboard();
         const isTurnValid = this.validateTurn(socketId);
         const isMoveValid = this.chessService.isMoveValid(socketId, oldPosition, newPosition, chessboard);
-        if (!isTurnValid || !isMoveValid)
-            return false;
-        return this.chessService.checkForPawnPromotion(oldPosition, newPosition, chessboard);
+        return isTurnValid && isMoveValid;
     }
 }

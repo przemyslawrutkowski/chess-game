@@ -34,6 +34,7 @@ export interface MoveResultDTO {
     score: ScoreDTO;
     currentOrWinningPlayer: UserDTO | null;
     gameState: GameState;
+    newMovementStrategy: MovementStrategy | null;
 }
 
 export interface MoveDTO {

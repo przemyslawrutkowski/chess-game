@@ -4,6 +4,7 @@ import ChessPieceC from './ChessPieceC.js';
 import ChessboardCellC from './ChessboardCellC.js';
 import Position from '../../../shared/src/models/Position.js';
 import PromotionSelector from './PromotionSelectorC.js';
+import { MovementStrategy } from '../../../shared/src/enums/MovementStrategy.js';
 
 const template = document.createElement('template');
 template.innerHTML = `
@@ -77,9 +78,9 @@ export default class ChessboardPanelC extends HTMLElement {
         }
     }
 
-    public update(oldPosition: Position, newPosition: Position) {
-        let oldCell: ChessboardCellC | null = null;
-        let newCell: ChessboardCellC | null = null;
+    public update(oldPosition: Position, newPosition: Position, newMovementStrategy: MovementStrategy | null) {
+        let oldCellC: ChessboardCellC | null = null;
+        let newCellC: ChessboardCellC | null = null;
 
         const cells = Array.from(this.chessboard.children) as ChessboardCellC[];
 
@@ -87,22 +88,28 @@ export default class ChessboardPanelC extends HTMLElement {
             const xPosition = cell.getXPosition();
             const yPosition = cell.getYPosition();
             if (oldPosition.getX() === xPosition && oldPosition.getY() === yPosition) {
-                oldCell = cell;
+                oldCellC = cell;
             } else if (newPosition.getX() === xPosition && newPosition.getY() === yPosition) {
-                newCell = cell;
+                newCellC = cell;
             }
         });
 
-        let chessPiece: ChessPieceC | null = null;
+        let chessPieceC: ChessPieceC | null = null;
 
-        if (oldCell !== null) {
-            chessPiece = (oldCell as ChessboardCellC).getChessPiece();
-            (oldCell as ChessboardCellC).unsetChessPiece();
+        if (oldCellC !== null) {
+            chessPieceC = (oldCellC as ChessboardCellC).getChessPiece();
+            (oldCellC as ChessboardCellC).unsetChessPiece();
         }
 
-        if (newCell !== null && chessPiece !== null) {
-            (newCell as ChessboardCellC).unsetChessPiece();
-            (newCell as ChessboardCellC).setChessPiece(chessPiece);
+        if (newCellC !== null && chessPieceC !== null) {
+            (newCellC as ChessboardCellC).unsetChessPiece();
+            (newCellC as ChessboardCellC).setChessPiece(chessPieceC);
+
+            if (newMovementStrategy) {
+                chessPieceC.changeVisualModel(newMovementStrategy);
+                const chessPiece = chessPieceC.getChessPiece();
+                chessPiece.setMovementStrategy(newMovementStrategy);
+            }
         }
     }
 

@@ -88,6 +88,13 @@ export default class ChessService {
         newCell.setChessPiece(chessPieceOldPosition);
     }
 
+    public promotePawn(position: Position, movementStrategy: MovementStrategy, chessboard: Chessboard): void {
+        const chessPiece = this.getChessPieceAtPosition(position, chessboard);
+        if (!chessPiece) return;
+
+        chessPiece.setMovementStrategy(movementStrategy);
+    }
+
     private isPositionOccupied(socketId: string, position: Position, chessboard: Chessboard, byMe: boolean = false): boolean {
         const targetPiece = this.getChessPieceAtPosition(position, chessboard);
         if (targetPiece) {

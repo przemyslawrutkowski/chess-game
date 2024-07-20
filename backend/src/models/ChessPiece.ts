@@ -34,4 +34,8 @@ export default class ChessPiece {
     public setIsFirstMove(isFirstMove: boolean): void {
         this.isFirstMove = isFirstMove;
     }
+
+    public setMovementStrategy(movementStrategy: MovementStrategy): void {
+        this.movementStrategy = movementStrategy;
+    }
 }

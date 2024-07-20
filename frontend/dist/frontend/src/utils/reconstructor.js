@@ -32,9 +32,10 @@ export function reconstructMoveResult(moveResult) {
     const score = moveResult.score;
     const currentOrWinningPlayer = moveResult.currentOrWinningPlayer;
     const gameState = moveResult.gameState;
+    const newMovementStrategy = moveResult.newMovementStrategy;
     const reconstructedOldPosition = new Position(oldPosition.x, oldPosition.y);
     const reconstructedNewPosition = new Position(newPosition.x, newPosition.y);
     const reconstructedScore = new Score(score.lightScore, score.darkScore);
     const reconstructedCurrentOrWinningPlayer = currentOrWinningPlayer ? new ClientUser(currentOrWinningPlayer.username, currentOrWinningPlayer.color) : null;
-    return new MoveResult(reconstructedOldPosition, reconstructedNewPosition, reconstructedScore, reconstructedCurrentOrWinningPlayer, gameState);
+    return new MoveResult(reconstructedOldPosition, reconstructedNewPosition, reconstructedScore, reconstructedCurrentOrWinningPlayer, gameState, newMovementStrategy);
 }

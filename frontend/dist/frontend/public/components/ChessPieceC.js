@@ -66,14 +66,16 @@ function setColor(path, playerColor) {
 }
 export default class ChessPieceC extends HTMLElement {
     chessPiece;
+    svg;
+    path;
     constructor(chessPiece) {
         super();
         const clone = template.content.cloneNode(true);
-        const svg = clone.querySelector('svg');
-        const path = clone.querySelector('path');
+        this.svg = clone.querySelector('svg');
+        this.path = clone.querySelector('path');
         this.chessPiece = chessPiece;
-        setAttributes(svg, path, chessPiece.getMovementStrategy());
-        setColor(path, chessPiece.getUser().getColor());
+        setAttributes(this.svg, this.path, chessPiece.getMovementStrategy());
+        setColor(this.path, chessPiece.getUser().getColor());
         const shadowRoot = this.attachShadow({ mode: 'open' });
         shadowRoot.appendChild(clone);
         shadowRoot.adoptedStyleSheets = [globalStyle];
@@ -100,6 +102,12 @@ export default class ChessPieceC extends HTMLElement {
             composed: true
         });
         this.dispatchEvent(customEvent);
+    }
+    getChessPiece() {
+        return this.chessPiece;
+    }
+    changeVisualModel(movementStrategy) {
+        setAttributes(this.svg, this.path, movementStrategy);
     }
 }
 customElements.define('chess-piece', ChessPieceC);

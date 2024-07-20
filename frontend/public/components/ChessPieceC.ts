@@ -66,17 +66,19 @@ function setColor(path: SVGPathElement, playerColor: PlayerColor): void {
 
 export default class ChessPieceC extends HTMLElement {
     private chessPiece: ChessPiece;
+    private svg: SVGElement;
+    private path: SVGPathElement;
 
     constructor(chessPiece: ChessPiece) {
         super();
         const clone = template.content.cloneNode(true) as DocumentFragment;
-        const svg = clone.querySelector('svg') as SVGElement;
-        const path = clone.querySelector('path') as SVGPathElement;
+        this.svg = clone.querySelector('svg') as SVGElement;
+        this.path = clone.querySelector('path') as SVGPathElement;
 
         this.chessPiece = chessPiece;
 
-        setAttributes(svg, path, chessPiece.getMovementStrategy());
-        setColor(path, chessPiece.getUser().getColor());
+        setAttributes(this.svg, this.path, chessPiece.getMovementStrategy());
+        setColor(this.path, chessPiece.getUser().getColor());
 
         const shadowRoot = this.attachShadow({ mode: 'open' });
         shadowRoot.appendChild(clone);
@@ -107,6 +109,14 @@ export default class ChessPieceC extends HTMLElement {
             composed: true
         });
         this.dispatchEvent(customEvent);
+    }
+
+    public getChessPiece(): ChessPiece {
+        return this.chessPiece;
+    }
+
+    public changeVisualModel(movementStrategy: MovementStrategy): void {
+        setAttributes(this.svg, this.path, movementStrategy);
     }
 }
 

@@ -64,28 +64,33 @@ export default class ChessboardPanelC extends HTMLElement {
             }
         }
     }
-    update(oldPosition, newPosition) {
-        let oldCell = null;
-        let newCell = null;
+    update(oldPosition, newPosition, newMovementStrategy) {
+        let oldCellC = null;
+        let newCellC = null;
         const cells = Array.from(this.chessboard.children);
         cells.forEach(cell => {
             const xPosition = cell.getXPosition();
             const yPosition = cell.getYPosition();
             if (oldPosition.getX() === xPosition && oldPosition.getY() === yPosition) {
-                oldCell = cell;
+                oldCellC = cell;
             }
             else if (newPosition.getX() === xPosition && newPosition.getY() === yPosition) {
-                newCell = cell;
+                newCellC = cell;
             }
         });
-        let chessPiece = null;
-        if (oldCell !== null) {
-            chessPiece = oldCell.getChessPiece();
-            oldCell.unsetChessPiece();
+        let chessPieceC = null;
+        if (oldCellC !== null) {
+            chessPieceC = oldCellC.getChessPiece();
+            oldCellC.unsetChessPiece();
         }
-        if (newCell !== null && chessPiece !== null) {
-            newCell.unsetChessPiece();
-            newCell.setChessPiece(chessPiece);
+        if (newCellC !== null && chessPieceC !== null) {
+            newCellC.unsetChessPiece();
+            newCellC.setChessPiece(chessPieceC);
+            if (newMovementStrategy) {
+                chessPieceC.changeVisualModel(newMovementStrategy);
+                const chessPiece = chessPieceC.getChessPiece();
+                chessPiece.setMovementStrategy(newMovementStrategy);
+            }
         }
     }
 }

@@ -153,6 +153,11 @@ io.on("connection", (socket) => {
         const result = gamesService.checkForPawnPromotion(socket.id, move);
         io.to(socket.id).emit(Events.PAWN_PROMOTION_RESULT, result);
     });
+
+    socket.on(Events.IS_MOVE_VALID, (move: MoveDTO) => {
+        const result = gamesService.isMoveValid(socket.id, move);
+        io.to(socket.id).emit(Events.MOVE_VALIDATION_RESULT, result);
+    });
 });
 
 httpServer.listen(port, () => {
