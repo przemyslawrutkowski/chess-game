@@ -13,6 +13,9 @@ const Events = {
     OPPONENT_DISCONNECTED: "opponent_disconnected",
 
     SELF_DISCONNECT: "self_disconnect",
-    SELF_DISCONNECTED: "self_disconnected"
+    SELF_DISCONNECTED: "self_disconnected",
+
+    CHECK_PAWN_PROMOTION: "check_pawn_promotion",
+    PAWN_PROMOTION_RESULT: "pawn_promotion_result"
 }
 export default Events;

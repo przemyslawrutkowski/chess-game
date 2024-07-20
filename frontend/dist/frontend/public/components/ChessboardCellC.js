@@ -49,6 +49,8 @@ export default class ChessboardCellC extends HTMLElement {
         shadowRoot.appendChild(clone);
         shadowRoot.adoptedStyleSheets = [globalStyle];
         this.socket = SocketConnection.getInstance();
+    }
+    connectedCallback() {
         this.addEventListener('dragover', this.handleDragOver);
         this.addEventListener('drop', this.handleDrop);
         this.addEventListener('requestPosition', (event) => {
@@ -71,8 +73,26 @@ export default class ChessboardCellC extends HTMLElement {
             const moveData = JSON.parse(moveDataJson);
             const oldPosition = moveData;
             const newPostition = { x: this.getXPosition(), y: this.getYPosition() };
-            const move = { oldPosition: oldPosition, newPosition: newPostition };
-            this.socket.emit(Events.UPDATE_GAME_STATE, move);
+            const move = { oldPosition: oldPosition, newPosition: newPostition, newMovementStrategy: null };
+            this.socket.emit(Events.CHECK_PAWN_PROMOTION, move);
+            this.socket.once(Events.PAWN_PROMOTION_RESULT, (promotion) => {
+                if (promotion) {
+                    const customEvent = new CustomEvent('pawnPromotion', {
+                        detail: {
+                            callback: (movementStrategy) => {
+                                move.newMovementStrategy = movementStrategy;
+                                this.socket.emit(Events.UPDATE_GAME_STATE, move);
+                            }
+                        },
+                        bubbles: true,
+                        composed: true
+                    });
+                    this.dispatchEvent(customEvent);
+                }
+                else {
+                    this.socket.emit(Events.UPDATE_GAME_STATE, move);
+                }
+            });
         }
     }
     setChessPiece(chessPiece) {

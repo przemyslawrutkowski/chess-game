@@ -396,4 +396,14 @@ export default class ChessService {
                 return 0;
         }
     }
+    checkForPawnPromotion(oldPosition, newPosition, chessboard) {
+        const chessPiece = this.getChessPieceAtPosition(oldPosition, chessboard);
+        if (!chessPiece)
+            return false;
+        const movementStrategy = chessPiece.getMovementStrategy();
+        if (movementStrategy !== MovementStrategy.PawnMovement)
+            return false;
+        const isPromotionRow = chessPiece.getUser().getColor() === PlayerColor.Light ? newPosition.getX() === 7 : newPosition.getX() === 0;
+        return isPromotionRow;
+    }
 }

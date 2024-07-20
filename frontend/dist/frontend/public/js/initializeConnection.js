@@ -16,7 +16,6 @@ export default function startInit() {
         connectButton.setStatus(buttonStatus);
         const socket = SocketConnection.getInstance();
         socket.once(Events.MATCH_FOUND, () => {
-            console.log(socket.id);
             navigationModule.loadPage('/game', true);
         });
         connectButton.addEventListener('click', async (event) => {

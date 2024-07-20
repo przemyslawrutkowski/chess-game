@@ -174,6 +174,10 @@ export default class InfoPanelC extends HTMLElement {
 
         this.disconnectButton.setStatus(disconnectButtonStatus);
         this.nextOpponentButton.setStatus(nextOpponentButtonStatus);
+    }
+
+    connectedCallback() {
+        let nextOpponentButtonStatus: 'Next Opponent' | 'Searching...' = 'Next Opponent';
 
         const handleDisconnect = () => {
             navigationModule.loadPage('/', false);

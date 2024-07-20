@@ -165,6 +165,9 @@ export default class InfoPanelC extends HTMLElement {
         const disconnectButtonStatus = 'Disconnect';
         this.disconnectButton.setStatus(disconnectButtonStatus);
         this.nextOpponentButton.setStatus(nextOpponentButtonStatus);
+    }
+    connectedCallback() {
+        let nextOpponentButtonStatus = 'Next Opponent';
         const handleDisconnect = () => {
             navigationModule.loadPage('/', false);
             this.socket.off(Events.SELF_DISCONNECTED);
@@ -181,14 +184,12 @@ export default class InfoPanelC extends HTMLElement {
         });
         this.disconnectButton.addEventListener('click', (event) => {
             event.preventDefault();
-            console.log('clicked disconnect');
             this.socket.off(Events.SELF_DISCONNECTED);
             this.socket.on(Events.SELF_DISCONNECTED, handleDisconnect);
             this.socket.emit(Events.SELF_DISCONNECT);
         });
         this.nextOpponentButton.addEventListener('click', (event) => {
             event.preventDefault();
-            console.log(this.socket.id);
             if (nextOpponentButtonStatus === 'Next Opponent') {
                 this.socket.off(Events.SELF_DISCONNECTED);
                 this.socket.on(Events.SELF_DISCONNECTED, handleDisconnectForNextOpponent);

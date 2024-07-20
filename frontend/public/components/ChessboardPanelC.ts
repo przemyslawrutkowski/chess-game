@@ -3,6 +3,7 @@ import { Chessboard } from '../../src/types/Chessboard.js';
 import ChessPieceC from './ChessPieceC.js';
 import ChessboardCellC from './ChessboardCellC.js';
 import Position from '../../../shared/src/models/Position.js';
+import PromotionSelector from './PromotionSelectorC.js';
 
 const template = document.createElement('template');
 template.innerHTML = `
@@ -21,19 +22,43 @@ template.innerHTML = `
         }
     </style>
 
+
     <div class="chessboard-panel"></div>
+    <promotion-selector></promotion-selector>
 `;
 
 export default class ChessboardPanelC extends HTMLElement {
     private chessboard: HTMLDivElement;
+    private promotionSelector: PromotionSelector;
 
     constructor() {
         super();
         const clone = template.content.cloneNode(true) as DocumentFragment;
         this.chessboard = clone.querySelector('.chessboard-panel') as HTMLDivElement;
+        this.promotionSelector = clone.querySelector('promotion-selector') as PromotionSelector;
         const shadowRoot = this.attachShadow({ mode: 'open' });
         shadowRoot.appendChild(clone);
         shadowRoot.adoptedStyleSheets = [globalStyle];
+    }
+
+    connectedCallback() {
+        this.addEventListener('pawnPromotion', (event: Event) => {
+            const pawnPromotionEvent = event as CustomEvent;
+            if (pawnPromotionEvent.detail && pawnPromotionEvent.detail.callback) {
+                this.promotionSelector.show();
+
+                const handlePromotionSelected = (event: Event) => {
+                    const promotionSelectedEvent = event as CustomEvent;
+                    const movementStrategy = promotionSelectedEvent.detail.movementStrategy;
+                    pawnPromotionEvent.detail.callback(movementStrategy);
+                    this.promotionSelector.hide();
+
+                    this.promotionSelector.removeEventListener('promotionSelected', handlePromotionSelected);
+                };
+
+                this.promotionSelector.addEventListener('promotionSelected', handlePromotionSelected);
+            }
+        });
     }
 
     public initialize(chessboard: Chessboard) {

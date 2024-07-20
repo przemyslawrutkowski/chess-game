@@ -83,6 +83,9 @@ export default class ChessPieceC extends HTMLElement {
         shadowRoot.adoptedStyleSheets = [globalStyle];
 
         this.setAttribute('draggable', 'true');
+    }
+
+    connectedCallback() {
         this.addEventListener('dragstart', this.handleDragStart);
     }
 

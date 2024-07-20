@@ -67,9 +67,10 @@ export default class GamesService {
         const game = this.getGameState(socketId);
         if (!game)
             return null;
+        console.log(JSON.stringify(move));
         const oldPosition = new Position(move.oldPosition.x, move.oldPosition.y);
         const newPosition = new Position(move.newPosition.x, move.newPosition.y);
-        const reconstructedMove = new Move(oldPosition, newPosition);
+        const reconstructedMove = new Move(oldPosition, newPosition, null);
         const chessboard = game.getChessboard();
         const isTurnValid = this.validateTurn(socketId);
         const isMoveValid = this.chessService.isMoveValid(socketId, oldPosition, newPosition, chessboard);
@@ -92,5 +93,18 @@ export default class GamesService {
             gameState: gameState
         };
         return moveResult;
+    }
+    checkForPawnPromotion(socketId, move) {
+        const game = this.getGameState(socketId);
+        if (!game)
+            return false;
+        const oldPosition = new Position(move.oldPosition.x, move.oldPosition.y);
+        const newPosition = new Position(move.newPosition.x, move.newPosition.y);
+        const chessboard = game.getChessboard();
+        const isTurnValid = this.validateTurn(socketId);
+        const isMoveValid = this.chessService.isMoveValid(socketId, oldPosition, newPosition, chessboard);
+        if (!isTurnValid || !isMoveValid)
+            return false;
+        return this.chessService.checkForPawnPromotion(oldPosition, newPosition, chessboard);
     }
 }

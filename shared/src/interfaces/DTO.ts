@@ -39,6 +39,7 @@ export interface MoveResultDTO {
 export interface MoveDTO {
     oldPosition: PositionDTO;
     newPosition: PositionDTO;
+    newMovementStrategy: MovementStrategy | null;
 }
 
 export interface PositionDTO {

@@ -18,17 +18,37 @@ template.innerHTML = `
         }
     </style>
 
+
     <div class="chessboard-panel"></div>
+    <promotion-selector></promotion-selector>
 `;
 export default class ChessboardPanelC extends HTMLElement {
     chessboard;
+    promotionSelector;
     constructor() {
         super();
         const clone = template.content.cloneNode(true);
         this.chessboard = clone.querySelector('.chessboard-panel');
+        this.promotionSelector = clone.querySelector('promotion-selector');
         const shadowRoot = this.attachShadow({ mode: 'open' });
         shadowRoot.appendChild(clone);
         shadowRoot.adoptedStyleSheets = [globalStyle];
+    }
+    connectedCallback() {
+        this.addEventListener('pawnPromotion', (event) => {
+            const pawnPromotionEvent = event;
+            if (pawnPromotionEvent.detail && pawnPromotionEvent.detail.callback) {
+                this.promotionSelector.show();
+                const handlePromotionSelected = (event) => {
+                    const promotionSelectedEvent = event;
+                    const movementStrategy = promotionSelectedEvent.detail.movementStrategy;
+                    pawnPromotionEvent.detail.callback(movementStrategy);
+                    this.promotionSelector.hide();
+                    this.promotionSelector.removeEventListener('promotionSelected', handlePromotionSelected);
+                };
+                this.promotionSelector.addEventListener('promotionSelected', handlePromotionSelected);
+            }
+        });
     }
     initialize(chessboard) {
         for (let x = 0; x < 8; x++) {

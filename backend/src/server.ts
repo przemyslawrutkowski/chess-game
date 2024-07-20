@@ -147,7 +147,11 @@ io.on("connection", (socket) => {
         if (opponentSocketId) {
             io.to(opponentSocketId).emit(Events.OPPONENT_DISCONNECTED);
         }
+    });
 
+    socket.on(Events.CHECK_PAWN_PROMOTION, (move: MoveDTO) => {
+        const result = gamesService.checkForPawnPromotion(socket.id, move);
+        io.to(socket.id).emit(Events.PAWN_PROMOTION_RESULT, result);
     });
 });
 
