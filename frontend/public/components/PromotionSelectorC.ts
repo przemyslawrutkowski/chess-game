@@ -5,9 +5,28 @@ const template = document.createElement('template');
 template.innerHTML = `
     <style>
         .promotion-selector {
+            margin: 0 auto;
             display: none;
+            flex-direction: row;
+            width: 300px;
+            height: 60px;
+            gap: 1rem;
+        }
+
+        .promotion-option {
+            flex: 1;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+        }
+
+        .promotion-option:hover {
+            transform: scale(1.1);
         }
     </style>
+
     <div class="promotion-selector">
         <div class="promotion-option" data-piece="rook">♜</div>
         <div class="promotion-option" data-piece="knight">♞</div>
@@ -58,7 +77,7 @@ export default class PromotionSelector extends HTMLElement {
     }
 
     public show() {
-        this.promotionSelector.style.display = 'block';
+        this.promotionSelector.style.display = 'flex';
     }
 
     public hide() {

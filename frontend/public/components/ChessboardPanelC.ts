@@ -15,14 +15,18 @@ template.innerHTML = `
             grid-template-rows: repeat(8, minmax(0, 1fr));
             max-width: 600px;
             max-height: 600px;
+            margin-bottom: 2rem;
         }
 
         chessboard-cell {
             position: relative;
             z-index: 1000;
         }
-    </style>
 
+        promotion-selector {
+            display: block;
+        }
+    </style>
 
     <div class="chessboard-panel"></div>
     <promotion-selector></promotion-selector>
