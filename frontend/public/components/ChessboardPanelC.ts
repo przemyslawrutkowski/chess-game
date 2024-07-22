@@ -4,7 +4,9 @@ import ChessPieceC from './ChessPieceC.js';
 import ChessboardCellC from './ChessboardCellC.js';
 import Position from '../../../shared/src/models/Position.js';
 import PromotionSelector from './PromotionSelectorC.js';
-import { MovementStrategy } from '../../../shared/src/enums/MovementStrategy.js';
+import Move from '../../../shared/src/models/Move.js';
+import PawnPromotion from '../../../shared/src/models/PawnPromotion.js';
+import EnPassant from '../../../shared/src/models/EnPassant.js';
 
 const template = document.createElement('template');
 template.innerHTML = `
@@ -82,9 +84,12 @@ export default class ChessboardPanelC extends HTMLElement {
         }
     }
 
-    public update(oldPosition: Position, newPosition: Position, newMovementStrategy: MovementStrategy | null) {
+    public update(move: Move) {
         let oldCellC: ChessboardCellC | null = null;
         let newCellC: ChessboardCellC | null = null;
+
+        const oldPosition = move.getOldPosition();
+        const newPosition = move.getNewPosition();
 
         const cells = Array.from(this.chessboard.children) as ChessboardCellC[];
 
@@ -109,10 +114,20 @@ export default class ChessboardPanelC extends HTMLElement {
             (newCellC as ChessboardCellC).unsetChessPiece();
             (newCellC as ChessboardCellC).setChessPiece(chessPieceC);
 
-            if (newMovementStrategy) {
-                chessPieceC.changeVisualModel(newMovementStrategy);
+            if (move instanceof PawnPromotion) {
+                chessPieceC.changeVisualModel(move.getNewMovementStrategy());
                 const chessPiece = chessPieceC.getChessPiece();
-                chessPiece.setMovementStrategy(newMovementStrategy);
+                chessPiece.setMovementStrategy(move.getNewMovementStrategy());
+            } else if (move instanceof EnPassant) {
+                const enPassantPosition = move.getEnPassantPosition();
+                const enPassantCell = cells.find(cell =>
+                    cell.getXPosition() === enPassantPosition.getX() &&
+                    cell.getYPosition() === enPassantPosition.getY()
+                );
+
+                if (enPassantCell) {
+                    enPassantCell.unsetChessPiece();
+                }
             }
         }
     }

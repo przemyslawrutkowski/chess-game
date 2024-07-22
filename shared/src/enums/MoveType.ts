@@ -1,4 +1,7 @@
 export enum MoveType {
     Move,
-    Capture
+    EnPassant,
+    PawnPromotion,
+    Castling,
+    Invalid
 }

@@ -1,6 +1,8 @@
 import globalStyle from '../js/globalStyles.js';
 import ChessPieceC from './ChessPieceC.js';
 import ChessboardCellC from './ChessboardCellC.js';
+import PawnPromotion from '../../../shared/src/models/PawnPromotion.js';
+import EnPassant from '../../../shared/src/models/EnPassant.js';
 const template = document.createElement('template');
 template.innerHTML = `
     <style>
@@ -68,9 +70,11 @@ export default class ChessboardPanelC extends HTMLElement {
             }
         }
     }
-    update(oldPosition, newPosition, newMovementStrategy) {
+    update(move) {
         let oldCellC = null;
         let newCellC = null;
+        const oldPosition = move.getOldPosition();
+        const newPosition = move.getNewPosition();
         const cells = Array.from(this.chessboard.children);
         cells.forEach(cell => {
             const xPosition = cell.getXPosition();
@@ -90,10 +94,18 @@ export default class ChessboardPanelC extends HTMLElement {
         if (newCellC !== null && chessPieceC !== null) {
             newCellC.unsetChessPiece();
             newCellC.setChessPiece(chessPieceC);
-            if (newMovementStrategy) {
-                chessPieceC.changeVisualModel(newMovementStrategy);
+            if (move instanceof PawnPromotion) {
+                chessPieceC.changeVisualModel(move.getNewMovementStrategy());
                 const chessPiece = chessPieceC.getChessPiece();
-                chessPiece.setMovementStrategy(newMovementStrategy);
+                chessPiece.setMovementStrategy(move.getNewMovementStrategy());
+            }
+            else if (move instanceof EnPassant) {
+                const enPassantPosition = move.getEnPassantPosition();
+                const enPassantCell = cells.find(cell => cell.getXPosition() === enPassantPosition.getX() &&
+                    cell.getYPosition() === enPassantPosition.getY());
+                if (enPassantCell) {
+                    enPassantCell.unsetChessPiece();
+                }
             }
         }
     }

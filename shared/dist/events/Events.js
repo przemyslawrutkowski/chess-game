@@ -9,9 +9,7 @@ const Events = {
     OPPONENT_DISCONNECTED: "opponent_disconnected",
     SELF_DISCONNECT: "self_disconnect",
     SELF_DISCONNECTED: "self_disconnected",
-    CHECK_PAWN_PROMOTION: "check_pawn_promotion",
-    PAWN_PROMOTION_RESULT: "pawn_promotion_result",
-    IS_MOVE_VALID: "is_move_valid",
-    MOVE_VALIDATION_RESULT: "move_validation_result"
+    CLASSIFY_MOVE: "classify_move",
+    MOVE_CLASSIFICATION_RESULT: "move_classification_result"
 };
 export default Events;

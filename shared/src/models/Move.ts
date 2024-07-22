@@ -1,15 +1,12 @@
-import { MovementStrategy } from "../enums/MovementStrategy.js";
 import Position from "./Position.js";
 
 export default class Move {
-    private oldPosition: Position;
-    private newPosition: Position;
-    private newMovementStrategy: MovementStrategy | null;
+    protected oldPosition: Position;
+    protected newPosition: Position;
 
-    constructor(oldPosition: Position, newPosition: Position, newMovementStrategy: MovementStrategy | null) {
+    constructor(oldPosition: Position, newPosition: Position) {
         this.oldPosition = oldPosition;
         this.newPosition = newPosition;
-        this.newMovementStrategy = newMovementStrategy;
     }
 
     public getOldPosition() {
@@ -18,9 +15,5 @@ export default class Move {
 
     public getNewPosition() {
         return this.newPosition;
-    }
-
-    public getNewMovementStrategy() {
-        return this.newMovementStrategy;
     }
 }

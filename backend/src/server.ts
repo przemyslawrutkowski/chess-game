@@ -7,6 +7,7 @@ import Events from '../../shared/src/events/Events.js';
 import { MoveDTO } from '../../shared/src/interfaces/DTO.js';
 import PoolService from './services/poolService.js';
 import GamesService from './services/gamesService.js';
+import { MoveType } from '../../shared/src/enums/MoveType.js';
 
 const poolService = PoolService.getInstance();
 const gamesService = GamesService.getInstance();
@@ -118,10 +119,10 @@ io.on("connection", (socket) => {
         }
     });
 
-    socket.on(Events.UPDATE_GAME_STATE, (move: MoveDTO) => {
+    socket.on(Events.UPDATE_GAME_STATE, (moveType: MoveType, move: MoveDTO) => {
         const socketIds = gamesService.getGameSocketIds(socket.id);
         if (socketIds) {
-            const moveResult = gamesService.moveChessPiece(socket.id, move);
+            const moveResult = gamesService.moveChessPiece(socket.id, moveType, move);
             if (moveResult) {
                 io.to(socketIds[0]).emit(Events.GAME_STATE_UPDATE, moveResult);
                 io.to(socketIds[1]).emit(Events.GAME_STATE_UPDATE, moveResult);
@@ -149,14 +150,10 @@ io.on("connection", (socket) => {
         }
     });
 
-    socket.on(Events.CHECK_PAWN_PROMOTION, (move: MoveDTO) => {
-        const result = gamesService.checkForPawnPromotion(socket.id, move);
-        io.to(socket.id).emit(Events.PAWN_PROMOTION_RESULT, result);
-    });
-
-    socket.on(Events.IS_MOVE_VALID, (move: MoveDTO) => {
-        const result = gamesService.isMoveValid(socket.id, move);
-        io.to(socket.id).emit(Events.MOVE_VALIDATION_RESULT, result);
+    socket.on(Events.CLASSIFY_MOVE, (move: MoveDTO) => {
+        const result = gamesService.classifyMove(socket.id, move);
+        console.log(result);
+        io.to(socket.id).emit(Events.MOVE_CLASSIFICATION_RESULT, result);
     });
 });
 

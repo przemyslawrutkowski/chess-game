@@ -3,16 +3,14 @@ import ServerUser from "./ServerUser.js";
 import crypto from 'crypto';
 
 export default class ChessPiece {
-    private id: string;
-    private user: ServerUser;
-    private movementStrategy: MovementStrategy;
-    private isFirstMove: boolean;
+    protected id: string;
+    protected user: ServerUser;
+    protected movementStrategy: MovementStrategy;
 
-    constructor(user: ServerUser, movementStrategy: MovementStrategy, isFirstMove: boolean = false) {
+    constructor(user: ServerUser, movementStrategy: MovementStrategy) {
         this.user = user;
         this.movementStrategy = movementStrategy;
         this.id = crypto.randomUUID();
-        this.isFirstMove = isFirstMove;
     }
 
     public getId(): string {
@@ -25,14 +23,6 @@ export default class ChessPiece {
 
     public getMovementStrategy(): MovementStrategy {
         return this.movementStrategy;
-    }
-
-    public getIsFirstMove(): boolean {
-        return this.isFirstMove;
-    }
-
-    public setIsFirstMove(isFirstMove: boolean): void {
-        this.isFirstMove = isFirstMove;
     }
 
     public setMovementStrategy(movementStrategy: MovementStrategy): void {

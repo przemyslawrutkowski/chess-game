@@ -2,6 +2,7 @@ import globalStyle from '../js/globalStyles.js';
 import SocketConnection from '../../src/models/SocketConnection.js';
 import Events from '../../../shared/src/events/Events.js';
 import Position from '../../../shared/src/models/Position.js';
+import { MoveType } from '../../../shared/src/enums/MoveType.js';
 const template = document.createElement('template');
 template.innerHTML = `
     <style>
@@ -73,30 +74,30 @@ export default class ChessboardCellC extends HTMLElement {
             const moveData = JSON.parse(moveDataJson);
             const oldPosition = moveData;
             const newPostition = { x: this.getXPosition(), y: this.getYPosition() };
-            const move = { oldPosition: oldPosition, newPosition: newPostition, newMovementStrategy: null };
-            this.socket.emit(Events.IS_MOVE_VALID, move);
-            this.socket.once(Events.MOVE_VALIDATION_RESULT, (valid) => {
-                if (!valid)
+            const move = { oldPosition: oldPosition, newPosition: newPostition };
+            this.socket.emit(Events.CLASSIFY_MOVE, move);
+            this.socket.once(Events.MOVE_CLASSIFICATION_RESULT, (result) => {
+                console.log(result);
+                if (result === MoveType.Invalid)
                     return;
-                this.socket.emit(Events.CHECK_PAWN_PROMOTION, move);
-                this.socket.once(Events.PAWN_PROMOTION_RESULT, (promotion) => {
-                    if (promotion) {
-                        const customEvent = new CustomEvent('pawnPromotion', {
-                            detail: {
-                                callback: (movementStrategy) => {
-                                    move.newMovementStrategy = movementStrategy;
-                                    this.socket.emit(Events.UPDATE_GAME_STATE, move);
-                                }
-                            },
-                            bubbles: true,
-                            composed: true
-                        });
-                        this.dispatchEvent(customEvent);
-                    }
-                    else {
-                        this.socket.emit(Events.UPDATE_GAME_STATE, move);
-                    }
-                });
+                if (result === MoveType.PawnPromotion) {
+                    const customEvent = new CustomEvent('pawnPromotion', {
+                        detail: {
+                            callback: (movementStrategy) => {
+                                const pawnPromotionDTO = { oldPosition: oldPosition, newPosition: newPostition, newMovementStrategy: movementStrategy };
+                                this.socket.emit(Events.UPDATE_GAME_STATE, result, pawnPromotionDTO);
+                            }
+                        },
+                        bubbles: true,
+                        composed: true
+                    });
+                    this.dispatchEvent(customEvent);
+                    return;
+                }
+                else {
+                    this.socket.emit(Events.UPDATE_GAME_STATE, result, move);
+                    return;
+                }
             });
         }
     }

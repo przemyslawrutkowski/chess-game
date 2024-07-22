@@ -5,6 +5,9 @@ import ClientGame from '../../src/models/ClientGame.js';
 import MoveResult from '../../src/models/MoveResult.js';
 import Position from '../../../shared/src/models/Position.js';
 import Score from '../../../shared/src/models/Score.js';
+import Move from '../../../shared/src/models/Move.js';
+import PawnPromotion from '../../../shared/src/models/PawnPromotion.js';
+import EnPassant from '../../../shared/src/models/EnPassant.js';
 export function reconstructGame(game) {
     const user1 = game.user1;
     const user2 = game.user2;
@@ -26,16 +29,25 @@ export function reconstructGame(game) {
     const reconstructedWhoseTurn = new ClientUser(whoseTurn.username, whoseTurn.color);
     return new ClientGame(reconstructedUser1, reconstructedUser2, reconstructedChessboard, reconstructedWhoseTurn, gameState);
 }
+function isPawnPromotionDTO(move) {
+    return move.newMovementStrategy !== undefined;
+}
+function isEnPassantDTO(move) {
+    return move.enPassantPosition !== undefined;
+}
 export function reconstructMoveResult(moveResult) {
-    const oldPosition = moveResult.oldPostion;
-    const newPosition = moveResult.newPosition;
+    const move = moveResult.move;
     const score = moveResult.score;
     const currentOrWinningPlayer = moveResult.currentOrWinningPlayer;
     const gameState = moveResult.gameState;
-    const newMovementStrategy = moveResult.newMovementStrategy;
-    const reconstructedOldPosition = new Position(oldPosition.x, oldPosition.y);
-    const reconstructedNewPosition = new Position(newPosition.x, newPosition.y);
+    let reconstructedMove = new Move(new Position(move.oldPosition.x, move.oldPosition.y), new Position(move.newPosition.x, move.newPosition.y));
+    if (isPawnPromotionDTO(moveResult.move)) {
+        reconstructedMove = new PawnPromotion(new Position(move.oldPosition.x, move.oldPosition.y), new Position(move.newPosition.x, move.newPosition.y), move.newMovementStrategy);
+    }
+    else if (isEnPassantDTO(moveResult.move)) {
+        reconstructedMove = new EnPassant(new Position(move.oldPosition.x, move.oldPosition.y), new Position(move.newPosition.x, move.newPosition.y), new Position(move.enPassantPosition.x, move.enPassantPosition.y));
+    }
     const reconstructedScore = new Score(score.lightScore, score.darkScore);
     const reconstructedCurrentOrWinningPlayer = currentOrWinningPlayer ? new ClientUser(currentOrWinningPlayer.username, currentOrWinningPlayer.color) : null;
-    return new MoveResult(reconstructedOldPosition, reconstructedNewPosition, reconstructedScore, reconstructedCurrentOrWinningPlayer, gameState, newMovementStrategy);
+    return new MoveResult(reconstructedMove, reconstructedScore, reconstructedCurrentOrWinningPlayer, gameState);
 }

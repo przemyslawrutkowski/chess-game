@@ -29,18 +29,23 @@ export interface ChessboardCellDTO {
 }
 
 export interface MoveResultDTO {
-    oldPostion: PositionDTO;
-    newPosition: PositionDTO;
+    move: MoveDTO;
     score: ScoreDTO;
     currentOrWinningPlayer: UserDTO | null;
     gameState: GameState;
-    newMovementStrategy: MovementStrategy | null;
 }
 
 export interface MoveDTO {
     oldPosition: PositionDTO;
     newPosition: PositionDTO;
-    newMovementStrategy: MovementStrategy | null;
+}
+
+export interface PawnPromotionDTO extends MoveDTO {
+    newMovementStrategy: MovementStrategy;
+}
+
+export interface EnPassantDTO extends MoveDTO {
+    enPassantPosition: PositionDTO;
 }
 
 export interface PositionDTO {

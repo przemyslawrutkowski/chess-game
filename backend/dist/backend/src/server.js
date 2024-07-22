@@ -101,10 +101,10 @@ io.on("connection", (socket) => {
             io.to(socket.id).emit(Events.GAME_STATE, result.getClientGame());
         }
     });
-    socket.on(Events.UPDATE_GAME_STATE, (move) => {
+    socket.on(Events.UPDATE_GAME_STATE, (moveType, move) => {
         const socketIds = gamesService.getGameSocketIds(socket.id);
         if (socketIds) {
-            const moveResult = gamesService.moveChessPiece(socket.id, move);
+            const moveResult = gamesService.moveChessPiece(socket.id, moveType, move);
             if (moveResult) {
                 io.to(socketIds[0]).emit(Events.GAME_STATE_UPDATE, moveResult);
                 io.to(socketIds[1]).emit(Events.GAME_STATE_UPDATE, moveResult);
@@ -129,13 +129,10 @@ io.on("connection", (socket) => {
             io.to(opponentSocketId).emit(Events.OPPONENT_DISCONNECTED);
         }
     });
-    socket.on(Events.CHECK_PAWN_PROMOTION, (move) => {
-        const result = gamesService.checkForPawnPromotion(socket.id, move);
-        io.to(socket.id).emit(Events.PAWN_PROMOTION_RESULT, result);
-    });
-    socket.on(Events.IS_MOVE_VALID, (move) => {
-        const result = gamesService.isMoveValid(socket.id, move);
-        io.to(socket.id).emit(Events.MOVE_VALIDATION_RESULT, result);
+    socket.on(Events.CLASSIFY_MOVE, (move) => {
+        const result = gamesService.classifyMove(socket.id, move);
+        console.log(result);
+        io.to(socket.id).emit(Events.MOVE_CLASSIFICATION_RESULT, result);
     });
 });
 httpServer.listen(port, () => {

@@ -5,6 +5,8 @@ import ChessService from "../services/ChessService.js";
 import Move from "../../../shared/src/models/Move.js";
 import Position from "../../../shared/src/models/Position.js";
 import { GameState } from "../../../shared/src/enums/GameState.js";
+import { MoveType } from "../../../shared/src/enums/MoveType.js";
+import PawnPromotion from "../../../shared/src/models/PawnPromotion.js";
 export default class GamesService {
     static instance;
     gamesRepository;
@@ -63,19 +65,21 @@ export default class GamesService {
             return false;
         return game.getCurrentOrWinningPlayer()?.getSocketId() === socketId;
     }
-    moveChessPiece(socketId, move) {
+    moveChessPiece(socketId, moveType, move) {
         const game = this.getGameState(socketId);
         if (!game)
             return null;
         const oldPosition = new Position(move.oldPosition.x, move.oldPosition.y);
         const newPosition = new Position(move.newPosition.x, move.newPosition.y);
-        const reconstructedMove = new Move(oldPosition, newPosition, null);
         const chessboard = game.getChessboard();
-        const newMovementStrategy = move.newMovementStrategy;
-        const scoreIncrease = this.chessService.moveChessPiece(reconstructedMove, chessboard);
+        let reconstructedMove = new Move(oldPosition, newPosition);
+        if (moveType === MoveType.PawnPromotion) {
+            reconstructedMove = new PawnPromotion(oldPosition, newPosition, move.newMovementStrategy);
+        }
+        const scoreIncrease = this.chessService.makeMove(moveType, reconstructedMove, chessboard);
         game.increaseScore(scoreIncrease);
-        if (newMovementStrategy)
-            this.chessService.promotePawn(newPosition, newMovementStrategy, chessboard);
+        if (reconstructedMove instanceof PawnPromotion)
+            this.chessService.promotePawn(newPosition, reconstructedMove.getNewMovementStrategy(), chessboard);
         const gameState = this.chessService.checkGameState(socketId, chessboard);
         game.updateCurrentPlayerOrWinner(gameState);
         const currentOrWinningPlayer = game.getCurrentOrWinningPlayer();
@@ -83,34 +87,38 @@ export default class GamesService {
             if (!this.removeGame(socketId))
                 throw new Error('We could not remove the game');
         }
+        let moveData = { oldPosition: move.oldPosition, newPosition: move.newPosition };
+        if (moveType === MoveType.PawnPromotion) {
+            moveData = { oldPosition: move.oldPosition, newPosition: move.newPosition, newMovementStrategy: move.newMovementStrategy };
+        }
+        else if (moveType === MoveType.EnPassant) {
+            moveData = { oldPosition: move.oldPosition, newPosition: move.newPosition, enPassantPosition: move.enPassantPosition };
+        }
         const moveResult = {
-            oldPostion: move.oldPosition,
-            newPosition: move.newPosition,
+            move: moveData,
             score: game.getClientScore(),
             currentOrWinningPlayer: currentOrWinningPlayer ? currentOrWinningPlayer.getClientUser() : null,
-            gameState: gameState,
-            newMovementStrategy: newMovementStrategy
+            gameState: gameState
         };
         return moveResult;
     }
-    checkForPawnPromotion(socketId, move) {
+    classifyMove(socketId, move) {
         const game = this.getGameState(socketId);
         if (!game)
-            return false;
-        const oldPosition = new Position(move.oldPosition.x, move.oldPosition.y);
-        const newPosition = new Position(move.newPosition.x, move.newPosition.y);
-        const chessboard = game.getChessboard();
-        return this.chessService.checkForPawnPromotion(oldPosition, newPosition, chessboard);
-    }
-    isMoveValid(socketId, move) {
-        const game = this.getGameState(socketId);
-        if (!game)
-            return false;
+            return MoveType.Invalid;
         const oldPosition = new Position(move.oldPosition.x, move.oldPosition.y);
         const newPosition = new Position(move.newPosition.x, move.newPosition.y);
         const chessboard = game.getChessboard();
         const isTurnValid = this.validateTurn(socketId);
         const isMoveValid = this.chessService.isMoveValid(socketId, oldPosition, newPosition, chessboard);
-        return isTurnValid && isMoveValid;
+        if (!isTurnValid || !isMoveValid)
+            MoveType.Invalid;
+        const isPawnPromotionMove = this.chessService.isPawnPromotionMove(oldPosition, newPosition, chessboard);
+        if (isPawnPromotionMove)
+            return MoveType.PawnPromotion;
+        const isEnPassantMove = this.chessService.isEnPassantMove(oldPosition, newPosition, chessboard);
+        if (isEnPassantMove)
+            return MoveType.EnPassant;
+        return MoveType.Move;
     }
 }

@@ -1,23 +1,16 @@
 export default class MoveResult {
-    oldPostion;
-    newPosition;
+    move;
     score;
     currentOrWinningPlayer;
     gameState;
-    newMovementStrategy;
-    constructor(oldPostion, newPosition, score, currentOrWinningPlayer, gameState, newMovementStrategy) {
-        this.oldPostion = oldPostion;
-        this.newPosition = newPosition;
+    constructor(move, score, currentOrWinningPlayer, gameState) {
+        this.move = move;
         this.score = score;
         this.currentOrWinningPlayer = currentOrWinningPlayer;
         this.gameState = gameState;
-        this.newMovementStrategy = newMovementStrategy;
     }
-    getOldPosition() {
-        return this.oldPostion;
-    }
-    getNewPosition() {
-        return this.newPosition;
+    getMove() {
+        return this.move;
     }
     getScore() {
         return this.score;
@@ -27,8 +20,5 @@ export default class MoveResult {
     }
     getGameState() {
         return this.gameState;
-    }
-    getNewMovementStrategy() {
-        return this.newMovementStrategy;
     }
 }

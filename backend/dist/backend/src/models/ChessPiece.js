@@ -3,12 +3,10 @@ export default class ChessPiece {
     id;
     user;
     movementStrategy;
-    isFirstMove;
-    constructor(user, movementStrategy, isFirstMove = false) {
+    constructor(user, movementStrategy) {
         this.user = user;
         this.movementStrategy = movementStrategy;
         this.id = crypto.randomUUID();
-        this.isFirstMove = isFirstMove;
     }
     getId() {
         return this.id;
@@ -18,12 +16,6 @@ export default class ChessPiece {
     }
     getMovementStrategy() {
         return this.movementStrategy;
-    }
-    getIsFirstMove() {
-        return this.isFirstMove;
-    }
-    setIsFirstMove(isFirstMove) {
-        this.isFirstMove = isFirstMove;
     }
     setMovementStrategy(movementStrategy) {
         this.movementStrategy = movementStrategy;

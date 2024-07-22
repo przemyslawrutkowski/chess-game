@@ -7,7 +7,10 @@ import MoveResult from '../../src/models/MoveResult.js';
 import Position from '../../../shared/src/models/Position.js';
 import Score from '../../../shared/src/models/Score.js';
 import { GameState } from '../../../shared/src/enums/GameState.js';
-import { MovementStrategy } from '../../../shared/src/enums/MovementStrategy.js';
+import Move from '../../../shared/src/models/Move.js';
+import { MoveDTO, EnPassantDTO, PawnPromotionDTO } from '../../../shared/src/interfaces/DTO.js';
+import PawnPromotion from '../../../shared/src/models/PawnPromotion.js';
+import EnPassant from '../../../shared/src/models/EnPassant.js';
 
 
 export function reconstructGame(game: GameDTO): ClientGame {
@@ -35,18 +38,29 @@ export function reconstructGame(game: GameDTO): ClientGame {
     return new ClientGame(reconstructedUser1, reconstructedUser2, reconstructedChessboard, reconstructedWhoseTurn, gameState);
 }
 
+function isPawnPromotionDTO(move: MoveDTO | PawnPromotionDTO | EnPassantDTO): move is PawnPromotionDTO {
+    return (move as PawnPromotionDTO).newMovementStrategy !== undefined;
+}
+
+function isEnPassantDTO(move: MoveDTO | PawnPromotionDTO | EnPassantDTO): move is EnPassantDTO {
+    return (move as EnPassantDTO).enPassantPosition !== undefined;
+}
+
 export function reconstructMoveResult(moveResult: MoveResultDTO): MoveResult {
-    const oldPosition: PositionDTO = moveResult.oldPostion;
-    const newPosition: PositionDTO = moveResult.newPosition;
+    const move: MoveDTO = moveResult.move;
     const score: ScoreDTO = moveResult.score;
     const currentOrWinningPlayer: UserDTO | null = moveResult.currentOrWinningPlayer;
     const gameState: GameState = moveResult.gameState;
-    const newMovementStrategy: MovementStrategy | null = moveResult.newMovementStrategy;
 
-    const reconstructedOldPosition = new Position(oldPosition.x, oldPosition.y);
-    const reconstructedNewPosition = new Position(newPosition.x, newPosition.y);
+    let reconstructedMove: Move | PawnPromotion | EnPassant = new Move(new Position(move.oldPosition.x, move.oldPosition.y), new Position(move.newPosition.x, move.newPosition.y));
+    if (isPawnPromotionDTO(moveResult.move)) {
+        reconstructedMove = new PawnPromotion(new Position(move.oldPosition.x, move.oldPosition.y), new Position(move.newPosition.x, move.newPosition.y), (move as PawnPromotionDTO).newMovementStrategy);
+    } else if (isEnPassantDTO(moveResult.move)) {
+        reconstructedMove = new EnPassant(new Position(move.oldPosition.x, move.oldPosition.y), new Position(move.newPosition.x, move.newPosition.y), new Position((move as EnPassantDTO).enPassantPosition.x, (move as EnPassantDTO).enPassantPosition.y));
+    }
+
     const reconstructedScore = new Score(score.lightScore, score.darkScore);
     const reconstructedCurrentOrWinningPlayer = currentOrWinningPlayer ? new ClientUser(currentOrWinningPlayer.username, currentOrWinningPlayer.color) : null;
 
-    return new MoveResult(reconstructedOldPosition, reconstructedNewPosition, reconstructedScore, reconstructedCurrentOrWinningPlayer, gameState, newMovementStrategy);
+    return new MoveResult(reconstructedMove, reconstructedScore, reconstructedCurrentOrWinningPlayer, gameState);
 }
