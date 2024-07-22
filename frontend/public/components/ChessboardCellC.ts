@@ -90,7 +90,7 @@ export default class ChessboardCellC extends HTMLElement {
             const move: MoveDTO = { oldPosition: oldPosition, newPosition: newPostition };
             this.socket.emit(Events.CLASSIFY_MOVE, move);
             this.socket.once(Events.MOVE_CLASSIFICATION_RESULT, (result: MoveType) => {
-                console.log(result);
+
                 if (result === MoveType.Invalid) return;
 
                 if (result === MoveType.PawnPromotion) {

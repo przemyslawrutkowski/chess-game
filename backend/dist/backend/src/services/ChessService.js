@@ -103,14 +103,18 @@ export default class ChessService {
         if (!piece)
             return false;
         const isOwnershipValid = this.isPositionOccupied(socketId, oldPosition, chessboard, true);
+        console.log(`isOwnershipValid: ${isOwnershipValid}`);
         const isOccupiedByMe = this.isPositionOccupied(socketId, newPosition, chessboard, true);
+        console.log(`isOccupiedByMe: ${isOccupiedByMe}`);
         if (!isOwnershipValid || isOccupiedByMe)
             return false;
         const clonedChessboard = this.cloneChessboard(chessboard);
         const isMoveLegal = this.isMoveLegal(oldPosition, newPosition, clonedChessboard);
+        console.log(`isMoveLegal: ${isMoveLegal}`);
         if (!isMoveLegal)
             return false;
         const doesResultsInCheck = this.doesResultsInCheck(socketId, oldPosition, newPosition, clonedChessboard);
+        console.log(`doesResultsInCheck: ${doesResultsInCheck}`);
         if (doesResultsInCheck)
             return false;
         return true;
@@ -388,19 +392,21 @@ export default class ChessService {
         const newPosition = move.getNewPosition();
         const chessPieceOldPosition = this.getChessPieceAtPosition(oldPosition, chessboard);
         const chessPieceNewPosition = this.getChessPieceAtPosition(newPosition, chessboard);
+        let scoreIncrease = 0;
+        if (moveType === MoveType.EnPassant) {
+            const isEnPassantMove = this.isEnPassantMove(oldPosition, newPosition, chessboard);
+            const enPassantPosition = isEnPassantMove.getEnPassantPosition();
+            const enPassantChessPiece = this.getChessPieceAtPosition(enPassantPosition, chessboard);
+            this.setChessPieceAtPosition(enPassantPosition, null, chessboard);
+            scoreIncrease = this.calculateScoreIncreaseForCapture(enPassantChessPiece);
+        }
         this.moveChessPiece(oldPosition, newPosition, chessboard);
         if (chessPieceOldPosition.getMovementStrategy() === MovementStrategy.PawnMovement) {
             chessPieceOldPosition.setIsFirstMove(false);
             const dx = Math.abs(newPosition.getX() - oldPosition.getX());
             chessPieceOldPosition.setWasPreviousMoveDouble(dx === 2);
         }
-        if (moveType === MoveType.EnPassant) {
-            const enPassantPosition = move.getEnPassantPosition();
-            const enPassantChessPiece = this.getChessPieceAtPosition(enPassantPosition, chessboard);
-            this.setChessPieceAtPosition(enPassantPosition, null, chessboard);
-            return this.calculateScoreIncreaseForCapture(enPassantChessPiece);
-        }
-        return this.calculateScoreIncreaseForCapture(chessPieceNewPosition);
+        return moveType === MoveType.EnPassant ? scoreIncrease : this.calculateScoreIncreaseForCapture(chessPieceNewPosition);
     }
     calculateScoreIncreaseForCapture(chessPiece) {
         if (!chessPiece)

@@ -35,6 +35,7 @@ export default function gameController() {
         });
 
         socket.on(Events.GAME_STATE_UPDATE, (moveResult: MoveResultDTO) => {
+            console.log(JSON.stringify(moveResult));
             const reconstructedMoveResult = reconstructMoveResult(moveResult);
 
             const move = reconstructedMoveResult.getMove();

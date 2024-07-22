@@ -121,7 +121,7 @@ io.on("connection", (socket) => {
 
     socket.on(Events.UPDATE_GAME_STATE, (moveType: MoveType, move: MoveDTO) => {
         const socketIds = gamesService.getGameSocketIds(socket.id);
-        if (socketIds) {
+        if (socketIds && moveType !== MoveType.Invalid) {
             const moveResult = gamesService.moveChessPiece(socket.id, moveType, move);
             if (moveResult) {
                 io.to(socketIds[0]).emit(Events.GAME_STATE_UPDATE, moveResult);
@@ -152,7 +152,6 @@ io.on("connection", (socket) => {
 
     socket.on(Events.CLASSIFY_MOVE, (move: MoveDTO) => {
         const result = gamesService.classifyMove(socket.id, move);
-        console.log(result);
         io.to(socket.id).emit(Events.MOVE_CLASSIFICATION_RESULT, result);
     });
 });

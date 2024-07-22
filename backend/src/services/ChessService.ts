@@ -127,6 +127,7 @@ export default class ChessService {
 
         const isOwnershipValid = this.isPositionOccupied(socketId, oldPosition, chessboard, true);
         const isOccupiedByMe = this.isPositionOccupied(socketId, newPosition, chessboard, true);
+
         if (!isOwnershipValid || isOccupiedByMe) return false;
 
         const clonedChessboard = this.cloneChessboard(chessboard);
@@ -449,6 +450,16 @@ export default class ChessService {
         const chessPieceOldPosition = this.getChessPieceAtPosition(oldPosition, chessboard) as ChessPiece;
         const chessPieceNewPosition = this.getChessPieceAtPosition(newPosition, chessboard);
 
+        let scoreIncrease = 0;
+
+        if (moveType === MoveType.EnPassant) {
+            const isEnPassantMove = this.isEnPassantMove(oldPosition, newPosition, chessboard);
+            const enPassantPosition = (isEnPassantMove as EnPassant).getEnPassantPosition();
+            const enPassantChessPiece = this.getChessPieceAtPosition(enPassantPosition, chessboard);
+            this.setChessPieceAtPosition(enPassantPosition, null, chessboard);
+            scoreIncrease = this.calculateScoreIncreaseForCapture(enPassantChessPiece);
+        }
+
         this.moveChessPiece(oldPosition, newPosition, chessboard);
 
         if (chessPieceOldPosition.getMovementStrategy() === MovementStrategy.PawnMovement) {
@@ -458,14 +469,7 @@ export default class ChessService {
             (chessPieceOldPosition as Pawn).setWasPreviousMoveDouble(dx === 2);
         }
 
-        if (moveType === MoveType.EnPassant) {
-            const enPassantPosition = (move as EnPassant).getEnPassantPosition();
-            const enPassantChessPiece = this.getChessPieceAtPosition(enPassantPosition, chessboard);
-            this.setChessPieceAtPosition(enPassantPosition, null, chessboard);
-            return this.calculateScoreIncreaseForCapture(enPassantChessPiece);
-        }
-
-        return this.calculateScoreIncreaseForCapture(chessPieceNewPosition);
+        return moveType === MoveType.EnPassant ? scoreIncrease : this.calculateScoreIncreaseForCapture(chessPieceNewPosition);
     }
 
     private calculateScoreIncreaseForCapture(chessPiece: ChessPiece | null): number {

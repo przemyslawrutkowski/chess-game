@@ -23,6 +23,7 @@ export default function gameController() {
             chessboardPanel.initialize(chessboard);
         });
         socket.on(Events.GAME_STATE_UPDATE, (moveResult) => {
+            console.log(JSON.stringify(moveResult));
             const reconstructedMoveResult = reconstructMoveResult(moveResult);
             const move = reconstructedMoveResult.getMove();
             const score = reconstructedMoveResult.getScore();

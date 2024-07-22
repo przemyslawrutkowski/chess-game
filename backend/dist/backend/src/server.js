@@ -6,6 +6,7 @@ import fs from 'fs';
 import Events from '../../shared/src/events/Events.js';
 import PoolService from './services/poolService.js';
 import GamesService from './services/gamesService.js';
+import { MoveType } from '../../shared/src/enums/MoveType.js';
 const poolService = PoolService.getInstance();
 const gamesService = GamesService.getInstance();
 const rootPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
@@ -103,7 +104,7 @@ io.on("connection", (socket) => {
     });
     socket.on(Events.UPDATE_GAME_STATE, (moveType, move) => {
         const socketIds = gamesService.getGameSocketIds(socket.id);
-        if (socketIds) {
+        if (socketIds && moveType !== MoveType.Invalid) {
             const moveResult = gamesService.moveChessPiece(socket.id, moveType, move);
             if (moveResult) {
                 io.to(socketIds[0]).emit(Events.GAME_STATE_UPDATE, moveResult);
@@ -131,7 +132,6 @@ io.on("connection", (socket) => {
     });
     socket.on(Events.CLASSIFY_MOVE, (move) => {
         const result = gamesService.classifyMove(socket.id, move);
-        console.log(result);
         io.to(socket.id).emit(Events.MOVE_CLASSIFICATION_RESULT, result);
     });
 });

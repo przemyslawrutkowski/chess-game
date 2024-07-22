@@ -3,11 +3,11 @@ import PoolService from "../services/poolService.js";
 import ServerGame from "../models/ServerGame.js";
 import ChessService from "../services/ChessService.js";
 import Move from "../../../shared/src/models/Move.js";
-import { MoveResultDTO, MoveDTO, PawnPromotionDTO, EnPassantDTO } from "../../../shared/src/interfaces/DTO.js";
+import { MoveResultDTO, MoveDTO, PawnPromotionDTO, EnPassantDTO, PositionDTO } from "../../../shared/src/interfaces/DTO.js";
 import Position from "../../../shared/src/models/Position.js";
 import { GameState } from "../../../shared/src/enums/GameState.js";
 import { MoveType } from "../../../shared/src/enums/MoveType.js";
-import { Chessboard } from "../types/Chessboard.js";
+import EnPassant from "../../../shared/src/models/EnPassant.js";
 import PawnPromotion from "../../../shared/src/models/PawnPromotion.js";
 
 export default class GamesService {
@@ -86,6 +86,15 @@ export default class GamesService {
             reconstructedMove = new PawnPromotion(oldPosition, newPosition, (move as PawnPromotionDTO).newMovementStrategy);
         }
 
+        let moveData: MoveDTO | PawnPromotionDTO | EnPassantDTO = { oldPosition: move.oldPosition, newPosition: move.newPosition };
+        if (moveType === MoveType.PawnPromotion) {
+            moveData = { oldPosition: move.oldPosition, newPosition: move.newPosition, newMovementStrategy: (move as PawnPromotionDTO).newMovementStrategy };
+        } else if (moveType === MoveType.EnPassant) {
+            const enPassantMove = this.chessService.isEnPassantMove(oldPosition, newPosition, chessboard) as EnPassant;
+            const enPassantPosition: PositionDTO = { x: enPassantMove.getEnPassantPosition().getX(), y: enPassantMove.getEnPassantPosition().getY() };
+            moveData = { oldPosition: move.oldPosition, newPosition: move.newPosition, enPassantPosition: enPassantPosition };
+        }
+
         const scoreIncrease = this.chessService.makeMove(moveType, reconstructedMove, chessboard);
         game.increaseScore(scoreIncrease);
 
@@ -98,13 +107,6 @@ export default class GamesService {
 
         if (gameState === GameState.Checkmate || gameState === GameState.Stalemate) {
             if (!this.removeGame(socketId)) throw new Error('We could not remove the game');
-        }
-
-        let moveData: MoveDTO | PawnPromotionDTO | EnPassantDTO = { oldPosition: move.oldPosition, newPosition: move.newPosition };
-        if (moveType === MoveType.PawnPromotion) {
-            moveData = { oldPosition: move.oldPosition, newPosition: move.newPosition, newMovementStrategy: (move as PawnPromotionDTO).newMovementStrategy };
-        } else if (moveType === MoveType.EnPassant) {
-            moveData = { oldPosition: move.oldPosition, newPosition: move.newPosition, enPassantPosition: (move as EnPassantDTO).enPassantPosition };
         }
 
         const moveResult: MoveResultDTO = {
@@ -128,7 +130,7 @@ export default class GamesService {
         const isTurnValid = this.validateTurn(socketId);
         const isMoveValid = this.chessService.isMoveValid(socketId, oldPosition, newPosition, chessboard);
 
-        if (!isTurnValid || !isMoveValid) MoveType.Invalid;
+        if (!isTurnValid || !isMoveValid) return MoveType.Invalid;
 
         const isPawnPromotionMove = this.chessService.isPawnPromotionMove(oldPosition, newPosition, chessboard);
         if (isPawnPromotionMove) return MoveType.PawnPromotion;
