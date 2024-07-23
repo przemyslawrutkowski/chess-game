@@ -74,21 +74,21 @@ export default class ChessService {
     promotePawn(position, movementStrategy, chessboard) {
         const chessPiece = this.getChessPieceAtPosition(position, chessboard);
         if (!chessPiece)
-            return;
+            throw new Error("Cannot promote pawn: No chess piece found at the given position.");
         chessPiece.setMovementStrategy(movementStrategy);
     }
     isPositionOccupied(socketId, position, chessboard, byMe = false) {
-        const targetPiece = this.getChessPieceAtPosition(position, chessboard);
-        if (targetPiece) {
-            return byMe ? targetPiece.getUser().getSocketId() === socketId : targetPiece.getUser().getSocketId() !== socketId;
+        const chessPiece = this.getChessPieceAtPosition(position, chessboard);
+        if (chessPiece) {
+            return byMe ? chessPiece.getUser().getSocketId() === socketId : chessPiece.getUser().getSocketId() !== socketId;
         }
         return false;
     }
     getOccupiedPositions(socketId, chessboard, byMe = false) {
         return chessboard.flatMap(row => row.flatMap(cell => {
-            const piece = cell.getChessPiece();
-            if (piece) {
-                const condition = byMe ? piece.getUser().getSocketId() === socketId : piece.getUser().getSocketId() !== socketId;
+            const chessPiece = cell.getChessPiece();
+            if (chessPiece) {
+                const condition = byMe ? chessPiece.getUser().getSocketId() === socketId : chessPiece.getUser().getSocketId() !== socketId;
                 if (condition) {
                     return [new Position(cell.getXPosition(), cell.getYPosition())];
                 }
@@ -98,9 +98,6 @@ export default class ChessService {
     }
     isMoveValid(socketId, oldPosition, newPosition, chessboard) {
         if (!this.isPositionValid(oldPosition) || !this.isPositionValid(newPosition))
-            return false;
-        const piece = this.getChessPieceAtPosition(oldPosition, chessboard);
-        if (!piece)
             return false;
         const isOwnershipValid = this.isPositionOccupied(socketId, oldPosition, chessboard, true);
         const isOccupiedByMe = this.isPositionOccupied(socketId, newPosition, chessboard, true);
@@ -121,9 +118,9 @@ export default class ChessService {
         const newX = newPosition.getX();
         const newY = newPosition.getY();
         const chessPiece = this.getChessPieceAtPosition(oldPosition, chessboard);
-        const targetPiece = this.getChessPieceAtPosition(newPosition, chessboard);
+        const targetChessPiece = this.getChessPieceAtPosition(newPosition, chessboard);
         if (!chessPiece)
-            return false;
+            throw new Error("Cannot check legality: No chess piece found at the given position.");
         const movementStrategy = chessPiece.getMovementStrategy();
         switch (movementStrategy) {
             case MovementStrategy.KingMovement: {
@@ -152,15 +149,15 @@ export default class ChessService {
             }
             case MovementStrategy.PawnMovement:
                 const direction = chessPiece.getUser().getColor() === PlayerColor.Light ? 1 : -1;
-                const doubleMove = chessPiece.getIsFirstMove() && (newX === oldX + 2 * direction) && (newY === oldY) && targetPiece === null;
-                const singleMove = (newX === oldX + direction) && (newY === oldY) && targetPiece === null;
-                const diagonalMove = (newX === oldX + direction) && ((newY === oldY + 1) || (newY === oldY - 1)) && targetPiece !== null;
+                const doubleMove = chessPiece.getIsFirstMove() && (newX === oldX + 2 * direction) && (newY === oldY) && targetChessPiece === null;
+                const singleMove = (newX === oldX + direction) && (newY === oldY) && targetChessPiece === null;
+                const diagonalMove = (newX === oldX + direction) && ((newY === oldY + 1) || (newY === oldY - 1)) && targetChessPiece !== null;
                 const canEnPassantToSide = (sideOffset) => {
                     const opponentPosition = new Position(oldX, oldY + sideOffset);
                     if (!this.isPositionValid(opponentPosition))
                         return false;
                     const opponentPiece = this.getChessPieceAtPosition(opponentPosition, chessboard);
-                    return targetPiece === null && (newX === oldX + direction) && (newY === oldY + sideOffset) && opponentPiece?.getMovementStrategy() === MovementStrategy.PawnMovement && opponentPiece.getWasPreviousMoveDouble() && this.isPositionOccupied(chessPiece.getUser().getSocketId(), opponentPosition, chessboard);
+                    return targetChessPiece === null && (newX === oldX + direction) && (newY === oldY + sideOffset) && opponentPiece?.getMovementStrategy() === MovementStrategy.PawnMovement && opponentPiece.getWasPreviousMoveDouble() && this.isPositionOccupied(chessPiece.getUser().getSocketId(), opponentPosition, chessboard);
                 };
                 return singleMove || doubleMove || diagonalMove || canEnPassantToSide(1) || canEnPassantToSide(-1);
         }
@@ -237,7 +234,7 @@ export default class ChessService {
     getPossibleMoves(socketId, position, chessboard) {
         const chessPiece = this.getChessPieceAtPosition(position, chessboard);
         if (!chessPiece)
-            return [];
+            throw new Error("Cannot get possible moves: No chess piece found at the given position.");
         const movementStrategy = chessPiece.getMovementStrategy();
         switch (movementStrategy) {
             case MovementStrategy.KingMovement:
@@ -306,8 +303,6 @@ export default class ChessService {
         return possibleMoves;
     }
     getRookMoves(socketId, position, chessboard) {
-        const x = position.getX();
-        const y = position.getY();
         const possibleMoves = [];
         const directions = [[-1, 0], [0, 1], [1, 0], [0, -1]];
         for (const direction of directions) {
@@ -327,8 +322,6 @@ export default class ChessService {
         return possibleMoves;
     }
     getBishopMoves(socketId, position, chessboard) {
-        const x = position.getX();
-        const y = position.getY();
         const possibleMoves = [];
         const directions = [[-1, 1], [1, 1], [1, -1], [-1, -1]];
         for (const direction of directions) {
@@ -369,7 +362,7 @@ export default class ChessService {
         const y = position.getY();
         const chessPiece = this.getChessPieceAtPosition(position, chessboard);
         if (!chessPiece)
-            return [];
+            throw new Error("Cannot get pawn moves: No chess piece found at the given position.");
         const direction = chessPiece.getUser().getColor() === PlayerColor.Light ? 1 : -1;
         const doubleMove = new Position(x + 2 * direction, y);
         const singleMove = new Position(x + direction, y);
@@ -386,8 +379,10 @@ export default class ChessService {
     makeMove(moveType, move, chessboard) {
         const oldPosition = move.getOldPosition();
         const newPosition = move.getNewPosition();
-        const chessPieceOldPosition = this.getChessPieceAtPosition(oldPosition, chessboard);
-        const chessPieceNewPosition = this.getChessPieceAtPosition(newPosition, chessboard);
+        const chessPiece = this.getChessPieceAtPosition(oldPosition, chessboard);
+        if (!chessPiece)
+            throw new Error("Cannot make move: No chess piece found at the given position.");
+        const targetChessPiece = this.getChessPieceAtPosition(newPosition, chessboard);
         let scoreIncrease = 0;
         if (moveType === MoveType.EnPassant) {
             const isEnPassantMove = this.isEnPassantMove(oldPosition, newPosition, chessboard);
@@ -397,12 +392,12 @@ export default class ChessService {
             scoreIncrease = this.calculateScoreIncreaseForCapture(enPassantChessPiece);
         }
         this.moveChessPiece(oldPosition, newPosition, chessboard);
-        if (chessPieceOldPosition.getMovementStrategy() === MovementStrategy.PawnMovement) {
-            chessPieceOldPosition.setIsFirstMove(false);
+        if (chessPiece.getMovementStrategy() === MovementStrategy.PawnMovement) {
+            chessPiece.setIsFirstMove(false);
             const dx = Math.abs(newPosition.getX() - oldPosition.getX());
-            chessPieceOldPosition.setWasPreviousMoveDouble(dx === 2);
+            chessPiece.setWasPreviousMoveDouble(dx === 2);
         }
-        return moveType === MoveType.EnPassant ? scoreIncrease : this.calculateScoreIncreaseForCapture(chessPieceNewPosition);
+        return moveType === MoveType.EnPassant ? scoreIncrease : this.calculateScoreIncreaseForCapture(targetChessPiece);
     }
     calculateScoreIncreaseForCapture(chessPiece) {
         if (!chessPiece)
@@ -425,7 +420,7 @@ export default class ChessService {
     isPawnPromotionMove(oldPosition, newPosition, chessboard) {
         const chessPiece = this.getChessPieceAtPosition(oldPosition, chessboard);
         if (!chessPiece)
-            return false;
+            throw new Error("Cannot check pawn promotion: No chess piece found at the given position.");
         const movementStrategy = chessPiece.getMovementStrategy();
         if (movementStrategy !== MovementStrategy.PawnMovement)
             return false;
@@ -438,7 +433,9 @@ export default class ChessService {
         const newX = newPosition.getX();
         const newY = newPosition.getY();
         const chessPiece = this.getChessPieceAtPosition(oldPosition, chessboard);
-        if (!chessPiece || chessPiece.getMovementStrategy() !== MovementStrategy.PawnMovement)
+        if (!chessPiece)
+            throw new Error("Cannot check en passant: No chess piece found at the given position.");
+        if (chessPiece.getMovementStrategy() !== MovementStrategy.PawnMovement)
             return null;
         const direction = chessPiece.getUser().getColor() === PlayerColor.Light ? 1 : -1;
         const isTargetPositionEmpty = this.getChessPieceAtPosition(newPosition, chessboard) === null;
