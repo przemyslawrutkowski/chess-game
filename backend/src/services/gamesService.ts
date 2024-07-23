@@ -35,11 +35,14 @@ export default class GamesService {
 
         const user1 = this.poolService.shiftUser();
         const user2 = this.poolService.shiftUser();
-        if (!user1 || !user2) return false;
+        if (!user1 || !user2) throw new Error("Failed to retrieve two users from the pool.");
 
         const chessboard = this.chessService.initilizeChessboard(user1, user2);
         const game = new ServerGame(user1, user2, chessboard);
-        return this.gamesRepository.addGame(game);
+
+        const result = this.gamesRepository.addGame(game);
+        if (!result) throw new Error("Failed to add game to the repository.");
+        return result;
     }
 
     public getGameState(socketId: string): ServerGame | null {
@@ -70,13 +73,13 @@ export default class GamesService {
 
     private validateTurn(socketId: string): boolean {
         const game = this.getGameState(socketId);
-        if (!game) return false;
+        if (!game) throw new Error("Cannot validate turn. Game not found.");
         return game.getCurrentOrWinningPlayer()?.getSocketId() === socketId;
     }
 
     public moveChessPiece(socketId: string, moveType: MoveType, move: MoveDTO): MoveResultDTO | null {
         const game = this.getGameState(socketId);
-        if (!game) return null;
+        if (!game) throw new Error("Operation failed: Game associated with the provided socket ID does not exist.");
 
         const oldPosition = new Position(move.oldPosition.x, move.oldPosition.y);
         const newPosition = new Position(move.newPosition.x, move.newPosition.y);
@@ -108,7 +111,7 @@ export default class GamesService {
         const currentOrWinningPlayer = game.getCurrentOrWinningPlayer();
 
         if (gameState === GameState.Checkmate || gameState === GameState.Stalemate) {
-            if (!this.removeGame(socketId)) throw new Error('We could not remove the game');
+            if (!this.removeGame(socketId)) throw new Error("Operation failed: Unable to remove the completed game.");
         }
 
         const moveResult: MoveResultDTO = {
