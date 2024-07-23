@@ -103,18 +103,14 @@ export default class ChessService {
         if (!piece)
             return false;
         const isOwnershipValid = this.isPositionOccupied(socketId, oldPosition, chessboard, true);
-        console.log(`isOwnershipValid: ${isOwnershipValid}`);
         const isOccupiedByMe = this.isPositionOccupied(socketId, newPosition, chessboard, true);
-        console.log(`isOccupiedByMe: ${isOccupiedByMe}`);
         if (!isOwnershipValid || isOccupiedByMe)
             return false;
         const clonedChessboard = this.cloneChessboard(chessboard);
         const isMoveLegal = this.isMoveLegal(oldPosition, newPosition, clonedChessboard);
-        console.log(`isMoveLegal: ${isMoveLegal}`);
         if (!isMoveLegal)
             return false;
         const doesResultsInCheck = this.doesResultsInCheck(socketId, oldPosition, newPosition, clonedChessboard);
-        console.log(`doesResultsInCheck: ${doesResultsInCheck}`);
         if (doesResultsInCheck)
             return false;
         return true;

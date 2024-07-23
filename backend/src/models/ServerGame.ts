@@ -4,6 +4,7 @@ import { Chessboard } from "../types/Chessboard.js";
 import Score from "../../../shared/src/models/Score.js";
 import { PlayerColor } from "../../../shared/src/enums/PlayerColor.js";
 import { GameState } from "../../../shared/src/enums/GameState.js";
+import { MoveStatus } from "../enums/MoveStatus.js";
 
 export default class ServerGame {
     private user1: ServerUser;
@@ -12,6 +13,7 @@ export default class ServerGame {
     private currentOrWinningPlayer: ServerUser | null;
     private score: Score;
     private gameState: GameState;
+    private moveStatus: MoveStatus;
 
     constructor(user1: ServerUser, user2: ServerUser, chessboard: Chessboard) {
         this.user1 = user1;
@@ -20,6 +22,7 @@ export default class ServerGame {
         this.currentOrWinningPlayer = user1;
         this.score = new Score(0, 0);
         this.gameState = GameState.InProgress;
+        this.moveStatus = MoveStatus.Completed;
     }
 
     public getUser1(): ServerUser {
@@ -96,5 +99,13 @@ export default class ServerGame {
         if (this.currentOrWinningPlayer) {
             this.currentOrWinningPlayer.getColor() === PlayerColor.Light ? this.score.increaseLightScore(score) : this.score.increaseDarkScore(score);
         }
+    }
+
+    public setMoveStatus(moveStatus: MoveStatus): void {
+        this.moveStatus = moveStatus;
+    }
+
+    public getMoveStatus(): MoveStatus {
+        return this.moveStatus
     }
 }

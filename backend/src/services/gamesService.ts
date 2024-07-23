@@ -9,6 +9,7 @@ import { GameState } from "../../../shared/src/enums/GameState.js";
 import { MoveType } from "../../../shared/src/enums/MoveType.js";
 import EnPassant from "../../../shared/src/models/EnPassant.js";
 import PawnPromotion from "../../../shared/src/models/PawnPromotion.js";
+import { MoveStatus } from "../enums/MoveStatus.js";
 
 export default class GamesService {
     private static instance: GamesService;
@@ -97,6 +98,7 @@ export default class GamesService {
 
         const scoreIncrease = this.chessService.makeMove(moveType, reconstructedMove, chessboard);
         game.increaseScore(scoreIncrease);
+        game.setMoveStatus(MoveStatus.Completed);
 
         if (reconstructedMove instanceof PawnPromotion) this.chessService.promotePawn(newPosition, reconstructedMove.getNewMovementStrategy(), chessboard);
 
@@ -129,11 +131,15 @@ export default class GamesService {
 
         const isTurnValid = this.validateTurn(socketId);
         const isMoveValid = this.chessService.isMoveValid(socketId, oldPosition, newPosition, chessboard);
+        const moveStatus = game.getMoveStatus();
 
-        if (!isTurnValid || !isMoveValid) return MoveType.Invalid;
+        if (!isTurnValid || !isMoveValid || moveStatus === MoveStatus.InProgress) return MoveType.Invalid;
 
         const isPawnPromotionMove = this.chessService.isPawnPromotionMove(oldPosition, newPosition, chessboard);
-        if (isPawnPromotionMove) return MoveType.PawnPromotion;
+        if (isPawnPromotionMove) {
+            game.setMoveStatus(MoveStatus.InProgress);
+            return MoveType.PawnPromotion;
+        }
 
         const isEnPassantMove = this.chessService.isEnPassantMove(oldPosition, newPosition, chessboard);
         if (isEnPassantMove) return MoveType.EnPassant;
