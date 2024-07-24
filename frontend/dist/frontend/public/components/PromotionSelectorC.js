@@ -58,7 +58,7 @@ export default class PromotionSelector extends HTMLElement {
         const target = event.target;
         const pieceType = target.getAttribute('data-piece');
         if (pieceType === null)
-            throw new Error('Piece type not found');
+            throw new Error('Piece type not found.');
         const movementStrategy = pieceTypeToMovementStrategy.get(pieceType);
         if (movementStrategy) {
             this.dispatchEvent(new CustomEvent('promotionSelected', {

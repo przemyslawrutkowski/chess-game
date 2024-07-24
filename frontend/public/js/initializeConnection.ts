@@ -15,7 +15,7 @@ export default function startInit() {
         }
         const spinner = document.querySelector('loading-spinner') as LoadingSpinnerC;
 
-        if (!usernameForm || !connectButton || !spinner) throw new Error('Page content was not generated correctly');
+        if (!usernameForm || !connectButton || !spinner) throw new Error('Page content was not generated correctly.');
 
         let buttonStatus: 'Connect' | 'Disconnect' = 'Connect';
         connectButton.setStatus(buttonStatus);

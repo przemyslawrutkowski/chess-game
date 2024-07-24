@@ -7,7 +7,7 @@ export default function gameController() {
         const infoPanel = document.querySelector('info-panel');
         const chessboardPanel = document.querySelector('chessboard-panel');
         if (!infoPanel || !chessboardPanel)
-            throw new Error('Page content was not generated correctly');
+            throw new Error('Page content was not generated correctly.');
         const socket = SocketConnection.getInstance();
         socket.emit(Events.GET_GAME_STATE);
         socket.once(Events.GAME_STATE, (game) => {

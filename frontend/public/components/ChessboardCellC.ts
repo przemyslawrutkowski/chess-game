@@ -114,25 +114,25 @@ export default class ChessboardCellC extends HTMLElement {
         }
     }
 
-    public setChessPiece(chessPiece: ChessPieceC) {
+    public setChessPiece(chessPiece: ChessPieceC): void {
         this.chessPiece = chessPiece;
         this.cell.appendChild(chessPiece);
     }
 
-    public unsetChessPiece() {
+    public unsetChessPiece(): void {
         this.cell.innerHTML = '';
         this.chessPiece = null;
     }
 
-    public getChessPiece() {
+    public getChessPiece(): ChessPieceC | null {
         return this.chessPiece;
     }
 
-    public getXPosition() {
+    public getXPosition(): number {
         return this.xPosition;
     }
 
-    public getYPosition() {
+    public getYPosition(): number {
         return this.yPosition;
     }
 }

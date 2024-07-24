@@ -229,7 +229,7 @@ export default class ChessService {
                 }
             }
         }
-        throw new Error("King not found");
+        throw new Error("King not found.");
     }
     getPossibleMoves(socketId, position, chessboard) {
         const chessPiece = this.getChessPieceAtPosition(position, chessboard);

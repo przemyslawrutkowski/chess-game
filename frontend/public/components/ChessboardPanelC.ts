@@ -94,44 +94,43 @@ export default class ChessboardPanelC extends HTMLElement {
         const cells = Array.from(this.chessboard.children) as ChessboardCellC[];
 
         cells.forEach(cell => {
-            const xPosition = cell.getXPosition();
-            const yPosition = cell.getYPosition();
-            if (oldPosition.getX() === xPosition && oldPosition.getY() === yPosition) {
+            if (oldPosition.getX() === cell.getXPosition() && oldPosition.getY() === cell.getYPosition()) {
                 oldCellC = cell;
-            } else if (newPosition.getX() === xPosition && newPosition.getY() === yPosition) {
+            } else if (newPosition.getX() === cell.getXPosition() && newPosition.getY() === cell.getYPosition()) {
                 newCellC = cell;
             }
         });
 
-        let chessPieceC: ChessPieceC | null = null;
-
-        if (oldCellC !== null) {
-            chessPieceC = (oldCellC as ChessboardCellC).getChessPiece();
-            (oldCellC as ChessboardCellC).unsetChessPiece();
+        if (!oldCellC || !newCellC) {
+            throw new Error("Invalid move: One or both specified positions do not exist on the chessboard.");
         }
 
-        if (newCellC !== null && chessPieceC !== null) {
-            (newCellC as ChessboardCellC).unsetChessPiece();
-            (newCellC as ChessboardCellC).setChessPiece(chessPieceC);
+        const chessPieceC: ChessPieceC | null = (oldCellC as ChessboardCellC).getChessPiece();
+        if (!chessPieceC) {
+            throw new Error("Invalid move: No chess piece found at the old position.");
+        }
 
-            if (move instanceof PawnPromotion) {
-                chessPieceC.changeVisualModel(move.getNewMovementStrategy());
-                const chessPiece = chessPieceC.getChessPiece();
-                chessPiece.setMovementStrategy(move.getNewMovementStrategy());
-            } else if (move instanceof EnPassant) {
-                const enPassantPosition = move.getEnPassantPosition();
-                const enPassantCell = cells.find(cell =>
-                    cell.getXPosition() === enPassantPosition.getX() &&
-                    cell.getYPosition() === enPassantPosition.getY()
-                );
+        (oldCellC as ChessboardCellC).unsetChessPiece();
 
-                if (enPassantCell) {
-                    enPassantCell.unsetChessPiece();
-                }
+        (newCellC as ChessboardCellC).unsetChessPiece();
+        (newCellC as ChessboardCellC).setChessPiece(chessPieceC);
+
+        if (move instanceof PawnPromotion) {
+            chessPieceC.changeVisualModel(move.getNewMovementStrategy());
+            const chessPiece = chessPieceC.getChessPiece();
+            chessPiece.setMovementStrategy(move.getNewMovementStrategy());
+        } else if (move instanceof EnPassant) {
+            const enPassantPosition = move.getEnPassantPosition();
+            const enPassantCell = cells.find(cell =>
+                cell.getXPosition() === enPassantPosition.getX() &&
+                cell.getYPosition() === enPassantPosition.getY()
+            );
+
+            if (enPassantCell) {
+                enPassantCell.unsetChessPiece();
             }
         }
     }
-
 }
 
 customElements.define('chessboard-panel', ChessboardPanelC);

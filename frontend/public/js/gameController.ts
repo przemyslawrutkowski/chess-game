@@ -11,7 +11,7 @@ export default function gameController() {
         const infoPanel = document.querySelector('info-panel') as InfoPanelC;
         const chessboardPanel = document.querySelector('chessboard-panel') as ChessboardPanelC;
 
-        if (!infoPanel || !chessboardPanel) throw new Error('Page content was not generated correctly');
+        if (!infoPanel || !chessboardPanel) throw new Error('Page content was not generated correctly.');
 
         const socket = SocketConnection.getInstance();
 

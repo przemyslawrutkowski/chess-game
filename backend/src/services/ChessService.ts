@@ -265,7 +265,7 @@ export default class ChessService {
                 }
             }
         }
-        throw new Error("King not found");
+        throw new Error("King not found.");
     }
 
     private getPossibleMoves(socketId: string, position: Position, chessboard: Chessboard): Position[] {
