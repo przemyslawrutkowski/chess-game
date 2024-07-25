@@ -52,15 +52,21 @@ export default class ChessboardCellC extends HTMLElement {
         this.socket = SocketConnection.getInstance();
     }
     connectedCallback() {
-        this.addEventListener('dragover', this.handleDragOver);
-        this.addEventListener('drop', this.handleDrop);
-        this.addEventListener('requestPosition', (event) => {
-            const customEvent = event;
-            if (customEvent.detail && customEvent.detail.callback) {
-                const position = new Position(this.getXPosition(), this.getYPosition());
-                customEvent.detail.callback(position);
-            }
-        });
+        this.addEventListener('dragover', this.handleDragOver.bind(this));
+        this.addEventListener('drop', this.handleDrop.bind(this));
+        this.addEventListener('requestPosition', this.handleRequestPosition.bind(this));
+    }
+    disconnectedCallback() {
+        this.removeEventListener('dragover', this.handleDragOver.bind(this));
+        this.removeEventListener('drop', this.handleDrop.bind(this));
+        this.removeEventListener('requestPosition', this.handleRequestPosition.bind(this));
+    }
+    handleRequestPosition(event) {
+        const customEvent = event;
+        if (customEvent.detail && customEvent.detail.callback) {
+            const position = new Position(this.getXPosition(), this.getYPosition());
+            customEvent.detail.callback(position);
+        }
     }
     handleDragOver(event) {
         event.preventDefault();

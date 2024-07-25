@@ -8,6 +8,7 @@ import Score from '../../../shared/src/models/Score.js';
 import Move from '../../../shared/src/models/Move.js';
 import PawnPromotion from '../../../shared/src/models/PawnPromotion.js';
 import EnPassant from '../../../shared/src/models/EnPassant.js';
+import Castling from '../../../shared/src/models/Castling.js';
 export function reconstructGame(game) {
     const user1 = game.user1;
     const user2 = game.user2;
@@ -35,17 +36,23 @@ function isPawnPromotionDTO(move) {
 function isEnPassantDTO(move) {
     return move.enPassantPosition !== undefined;
 }
+function isCastlingDTO(move) {
+    return move.rookOldPosition !== undefined && move.rookNewPosition !== undefined;
+}
 export function reconstructMoveResult(moveResult) {
     const move = moveResult.move;
     const score = moveResult.score;
     const currentOrWinningPlayer = moveResult.currentOrWinningPlayer;
     const gameState = moveResult.gameState;
     let reconstructedMove = new Move(new Position(move.oldPosition.x, move.oldPosition.y), new Position(move.newPosition.x, move.newPosition.y));
-    if (isPawnPromotionDTO(moveResult.move)) {
+    if (isPawnPromotionDTO(move)) {
         reconstructedMove = new PawnPromotion(new Position(move.oldPosition.x, move.oldPosition.y), new Position(move.newPosition.x, move.newPosition.y), move.newMovementStrategy);
     }
-    else if (isEnPassantDTO(moveResult.move)) {
+    else if (isEnPassantDTO(move)) {
         reconstructedMove = new EnPassant(new Position(move.oldPosition.x, move.oldPosition.y), new Position(move.newPosition.x, move.newPosition.y), new Position(move.enPassantPosition.x, move.enPassantPosition.y));
+    }
+    else if (isCastlingDTO(move)) {
+        reconstructedMove = new Castling(new Position(move.oldPosition.x, move.oldPosition.y), new Position(move.newPosition.x, move.newPosition.y), new Position(move.rookOldPosition.x, move.rookOldPosition.y), new Position(move.rookNewPosition.x, move.rookNewPosition.y));
     }
     const reconstructedScore = new Score(score.lightScore, score.darkScore);
     const reconstructedCurrentOrWinningPlayer = currentOrWinningPlayer ? new ClientUser(currentOrWinningPlayer.username, currentOrWinningPlayer.color) : null;

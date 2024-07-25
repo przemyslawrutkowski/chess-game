@@ -71,7 +71,6 @@ export default class UsernameFormC extends HTMLElement {
 
     public getUsernameInput() {
         return this.input.value.trim();
-
     }
 }
 

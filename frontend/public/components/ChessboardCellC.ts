@@ -63,16 +63,23 @@ export default class ChessboardCellC extends HTMLElement {
     }
 
     connectedCallback() {
-        this.addEventListener('dragover', this.handleDragOver);
-        this.addEventListener('drop', this.handleDrop);
+        this.addEventListener('dragover', this.handleDragOver.bind(this));
+        this.addEventListener('drop', this.handleDrop.bind(this));
+        this.addEventListener('requestPosition', this.handleRequestPosition.bind(this));
+    }
 
-        this.addEventListener('requestPosition', (event: Event) => {
-            const customEvent = event as CustomEvent;
-            if (customEvent.detail && customEvent.detail.callback) {
-                const position = new Position(this.getXPosition(), this.getYPosition());
-                customEvent.detail.callback(position);
-            }
-        });
+    disconnectedCallback() {
+        this.removeEventListener('dragover', this.handleDragOver.bind(this));
+        this.removeEventListener('drop', this.handleDrop.bind(this));
+        this.removeEventListener('requestPosition', this.handleRequestPosition.bind(this));
+    }
+
+    private handleRequestPosition(event: Event) {
+        const customEvent = event as CustomEvent;
+        if (customEvent.detail && customEvent.detail.callback) {
+            const position = new Position(this.getXPosition(), this.getYPosition());
+            customEvent.detail.callback(position);
+        }
     }
 
     private handleDragOver(event: DragEvent) {

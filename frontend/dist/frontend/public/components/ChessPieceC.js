@@ -82,7 +82,10 @@ export default class ChessPieceC extends HTMLElement {
         this.setAttribute('draggable', 'true');
     }
     connectedCallback() {
-        this.addEventListener('dragstart', this.handleDragStart);
+        this.addEventListener('dragstart', this.handleDragStart.bind(this));
+    }
+    disconnectedCallback() {
+        this.removeEventListener('dragstart', this.handleDragStart.bind(this));
     }
     handleDragStart(event) {
         const customEvent = new CustomEvent('requestPosition', {

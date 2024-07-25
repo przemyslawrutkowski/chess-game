@@ -1,23 +1,13 @@
-import ChessPiece from "./ChessPiece.js";
 import ServerUser from "./ServerUser.js";
 import { MovementStrategy } from "../../../shared/src/enums/MovementStrategy.js";
+import ChessPieceWithFirstMove from "./ChessPieceWithFirstMove.js";
 
-export default class Pawn extends ChessPiece {
-    private isFirstMove: boolean;
+export default class Pawn extends ChessPieceWithFirstMove {
     private wasPreviousMoveDouble: boolean;
 
     constructor(user: ServerUser, movementStrategy: MovementStrategy) {
         super(user, movementStrategy);
-        this.isFirstMove = true;
         this.wasPreviousMoveDouble = false;
-    }
-
-    public getIsFirstMove(): boolean {
-        return this.isFirstMove;
-    }
-
-    public setIsFirstMove(isFirstMove: boolean): void {
-        this.isFirstMove = isFirstMove;
     }
 
     public getWasPreviousMoveDouble(): boolean {

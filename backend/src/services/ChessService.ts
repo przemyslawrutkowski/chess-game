@@ -10,6 +10,8 @@ import { GameState } from "../../../shared/src/enums/GameState.js";
 import Pawn from "../models/Pawn.js";
 import EnPassant from "../../../shared/src/models/EnPassant.js";
 import { MoveType } from "../../../shared/src/enums/MoveType.js";
+import ChessPieceWithFirstMove from "../models/ChessPieceWithFirstMove.js";
+import Castling from "../../../shared/src/models/Castling.js";
 
 export default class ChessService {
     private static instance: ChessService;
@@ -52,18 +54,18 @@ export default class ChessService {
         chessboard[7][5].setChessPiece(new ChessPiece(user2, MovementStrategy.BishopMovement));
 
         // Initialize rooks
-        chessboard[0][0].setChessPiece(new ChessPiece(user1, MovementStrategy.RookMovement));
-        chessboard[0][7].setChessPiece(new ChessPiece(user1, MovementStrategy.RookMovement));
-        chessboard[7][0].setChessPiece(new ChessPiece(user2, MovementStrategy.RookMovement));
-        chessboard[7][7].setChessPiece(new ChessPiece(user2, MovementStrategy.RookMovement));
+        chessboard[0][0].setChessPiece(new ChessPieceWithFirstMove(user1, MovementStrategy.RookMovement));
+        chessboard[0][7].setChessPiece(new ChessPieceWithFirstMove(user1, MovementStrategy.RookMovement));
+        chessboard[7][0].setChessPiece(new ChessPieceWithFirstMove(user2, MovementStrategy.RookMovement));
+        chessboard[7][7].setChessPiece(new ChessPieceWithFirstMove(user2, MovementStrategy.RookMovement));
 
         // Initialize queen
         chessboard[0][3].setChessPiece(new ChessPiece(user1, MovementStrategy.QueenMovement));
         chessboard[7][3].setChessPiece(new ChessPiece(user2, MovementStrategy.QueenMovement));
 
         // Initialize king
-        chessboard[0][4].setChessPiece(new ChessPiece(user1, MovementStrategy.KingMovement));
-        chessboard[7][4].setChessPiece(new ChessPiece(user2, MovementStrategy.KingMovement));
+        chessboard[0][4].setChessPiece(new ChessPieceWithFirstMove(user1, MovementStrategy.KingMovement));
+        chessboard[7][4].setChessPiece(new ChessPieceWithFirstMove(user2, MovementStrategy.KingMovement));
 
         return chessboard;
     }
@@ -156,7 +158,7 @@ export default class ChessService {
             case MovementStrategy.KingMovement: {
                 const dx = Math.abs(newX - oldX);
                 const dy = Math.abs(newY - oldY);
-                return (dx <= 1 && dy <= 1);
+                return (dx <= 1 && dy <= 1) || this.isCastlingMove(oldPosition, newPosition, chessboard) !== null;
             }
             case MovementStrategy.QueenMovement:
                 if (oldX !== newX && oldY !== newY) {
@@ -181,14 +183,7 @@ export default class ChessService {
                 const singleMove = (newX === oldX + direction) && (newY === oldY) && targetChessPiece === null;
                 const diagonalMove = (newX === oldX + direction) && ((newY === oldY + 1) || (newY === oldY - 1)) && targetChessPiece !== null;
 
-                const canEnPassantToSide = (sideOffset: number) => {
-                    const opponentPosition = new Position(oldX, oldY + sideOffset);
-                    if (!this.isPositionValid(opponentPosition)) return false;
-                    const opponentPiece = this.getChessPieceAtPosition(opponentPosition, chessboard);
-                    return targetChessPiece === null && (newX === oldX + direction) && (newY === oldY + sideOffset) && opponentPiece?.getMovementStrategy() === MovementStrategy.PawnMovement && (opponentPiece as Pawn).getWasPreviousMoveDouble() && this.isPositionOccupied(chessPiece.getUser().getSocketId(), opponentPosition, chessboard);
-                };
-
-                return singleMove || doubleMove || diagonalMove || canEnPassantToSide(1) || canEnPassantToSide(-1);
+                return singleMove || doubleMove || diagonalMove || this.isEnPassantMove(oldPosition, newPosition, chessboard) !== null;
         }
 
         const dx = Math.sign(newX - oldX);
@@ -214,9 +209,13 @@ export default class ChessService {
 
     private doesResultsInCheck(socketId: string, oldPosition: Position, newPosition: Position, chessboard: Chessboard, opponent: boolean = false) {
         const isEnPassantMove = this.isEnPassantMove(oldPosition, newPosition, chessboard);
+        const isCastlingMove = this.isCastlingMove(oldPosition, newPosition, chessboard);
         if (isEnPassantMove) {
             this.setChessPieceAtPosition(isEnPassantMove.getEnPassantPosition(), null, chessboard);
             this.moveChessPiece(oldPosition, newPosition, chessboard);
+        } else if (isCastlingMove) {
+            this.moveChessPiece(oldPosition, newPosition, chessboard);
+            this.moveChessPiece(isCastlingMove.getRookOldPosition(), isCastlingMove.getRookNewPosition(), chessboard);
         } else {
             this.moveChessPiece(oldPosition, newPosition, chessboard);
         }
@@ -303,6 +302,8 @@ export default class ChessService {
             new Position(x + 1, y - 1),
             new Position(x, y - 1),
             new Position(x - 1, y - 1),
+            new Position(x, y + 2),
+            new Position(x, y - 2)
         ];
 
         return possibleMoves.filter(position => {
@@ -447,10 +448,19 @@ export default class ChessService {
 
         if (moveType === MoveType.EnPassant) {
             const isEnPassantMove = this.isEnPassantMove(oldPosition, newPosition, chessboard);
-            const enPassantPosition = (isEnPassantMove as EnPassant).getEnPassantPosition();
+            if (!isEnPassantMove) throw new Error("Cannot make en passant move: Unable to retrieve en passant move.");
+            const enPassantPosition = isEnPassantMove.getEnPassantPosition();
             const enPassantChessPiece = this.getChessPieceAtPosition(enPassantPosition, chessboard);
             this.setChessPieceAtPosition(enPassantPosition, null, chessboard);
             scoreIncrease = this.calculateScoreIncreaseForCapture(enPassantChessPiece);
+        } else if (moveType === MoveType.Castling) {
+            const castlingMove = this.isCastlingMove(oldPosition, newPosition, chessboard);
+            if (!castlingMove) throw new Error("Cannot make castling move: Unable to retrieve castling move.");
+            const rook = this.getChessPieceAtPosition(castlingMove.getRookOldPosition(), chessboard);
+            if (!rook) throw new Error("Cannot make castling move: No rook found at the given position.");
+            (chessPiece as ChessPieceWithFirstMove).setIsFirstMove(false);
+            (rook as ChessPieceWithFirstMove).setIsFirstMove(false);
+            this.moveChessPiece(castlingMove.getRookOldPosition(), castlingMove.getRookNewPosition(), chessboard);
         }
 
         this.moveChessPiece(oldPosition, newPosition, chessboard);
@@ -521,6 +531,36 @@ export default class ChessService {
         } else if (canEnPassantToSide(-1)) {
             const enPassantPosition = new Position(oldX, oldY - 1);
             return new EnPassant(oldPosition, newPosition, enPassantPosition);
+        }
+
+        return null;
+    }
+
+    public isCastlingMove(oldPosition: Position, newPosition: Position, chessboard: Chessboard): Castling | null {
+        const chessPiece = this.getChessPieceAtPosition(oldPosition, chessboard);
+        if (!chessPiece) throw new Error("Cannot check castling: No chess piece found at the given position.");
+        if (chessPiece.getMovementStrategy() !== MovementStrategy.KingMovement ||
+            !(chessPiece as ChessPieceWithFirstMove).getIsFirstMove()) return null;
+
+        const oldX = oldPosition.getX();
+        const oldY = oldPosition.getY();
+        const newX = newPosition.getX();
+        const newY = newPosition.getY();
+
+        if (oldX !== newX || Math.abs(newY - oldY) !== 2) return null;
+
+        const direction = newY > oldY ? 1 : -1;
+        const rookPosition = direction === 1 ? new Position(oldX, 7) : new Position(oldX, 0);
+
+        for (let y = oldY + direction; y !== rookPosition.getY(); y += direction) {
+            if (this.getChessPieceAtPosition(new Position(oldX, y), chessboard)) return null;
+        }
+
+        const rook = this.getChessPieceAtPosition(rookPosition, chessboard);
+        if (rook && rook.getMovementStrategy() === MovementStrategy.RookMovement &&
+            (rook as ChessPieceWithFirstMove).getIsFirstMove() &&
+            rook.getUser().getSocketId() === chessPiece.getUser().getSocketId()) {
+            return new Castling(oldPosition, newPosition, rookPosition, new Position(newX, newY - direction));
         }
 
         return null;

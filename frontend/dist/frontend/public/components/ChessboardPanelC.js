@@ -3,6 +3,7 @@ import ChessPieceC from './ChessPieceC.js';
 import ChessboardCellC from './ChessboardCellC.js';
 import PawnPromotion from '../../../shared/src/models/PawnPromotion.js';
 import EnPassant from '../../../shared/src/models/EnPassant.js';
+import Castling from '../../../shared/src/models/Castling.js';
 const template = document.createElement('template');
 template.innerHTML = `
     <style>
@@ -41,20 +42,24 @@ export default class ChessboardPanelC extends HTMLElement {
         shadowRoot.adoptedStyleSheets = [globalStyle];
     }
     connectedCallback() {
-        this.addEventListener('pawnPromotion', (event) => {
-            const pawnPromotionEvent = event;
-            if (pawnPromotionEvent.detail && pawnPromotionEvent.detail.callback) {
-                this.promotionSelector.show();
-                const handlePromotionSelected = (event) => {
-                    const promotionSelectedEvent = event;
-                    const movementStrategy = promotionSelectedEvent.detail.movementStrategy;
-                    pawnPromotionEvent.detail.callback(movementStrategy);
-                    this.promotionSelector.hide();
-                    this.promotionSelector.removeEventListener('promotionSelected', handlePromotionSelected);
-                };
-                this.promotionSelector.addEventListener('promotionSelected', handlePromotionSelected);
-            }
-        });
+        this.addEventListener('pawnPromotion', this.handlePromotionSelected.bind(this));
+    }
+    disconnectedCallback() {
+        this.removeEventListener('pawnPromotion', this.handlePromotionSelected.bind(this));
+    }
+    handlePromotionSelected(event) {
+        const pawnPromotionEvent = event;
+        if (pawnPromotionEvent.detail && pawnPromotionEvent.detail.callback) {
+            this.promotionSelector.show();
+            const handlePromotionSelected = (event) => {
+                const promotionSelectedEvent = event;
+                const movementStrategy = promotionSelectedEvent.detail.movementStrategy;
+                pawnPromotionEvent.detail.callback(movementStrategy);
+                this.promotionSelector.hide();
+                this.promotionSelector.removeEventListener('promotionSelected', handlePromotionSelected);
+            };
+            this.promotionSelector.addEventListener('promotionSelected', handlePromotionSelected);
+        }
     }
     initialize(chessboard) {
         for (let x = 0; x < 8; x++) {
@@ -84,13 +89,11 @@ export default class ChessboardPanelC extends HTMLElement {
                 newCellC = cell;
             }
         });
-        if (!oldCellC || !newCellC) {
+        if (!oldCellC || !newCellC)
             throw new Error("Invalid move: One or both specified positions do not exist on the chessboard.");
-        }
         const chessPieceC = oldCellC.getChessPiece();
-        if (!chessPieceC) {
+        if (!chessPieceC)
             throw new Error("Invalid move: No chess piece found at the old position.");
-        }
         oldCellC.unsetChessPiece();
         newCellC.unsetChessPiece();
         newCellC.setChessPiece(chessPieceC);
@@ -103,9 +106,24 @@ export default class ChessboardPanelC extends HTMLElement {
             const enPassantPosition = move.getEnPassantPosition();
             const enPassantCell = cells.find(cell => cell.getXPosition() === enPassantPosition.getX() &&
                 cell.getYPosition() === enPassantPosition.getY());
-            if (enPassantCell) {
-                enPassantCell.unsetChessPiece();
-            }
+            if (!enPassantCell)
+                throw new Error("Invalid move: En passant position does not exist on the chessboard.");
+            enPassantCell.unsetChessPiece();
+        }
+        else if (move instanceof Castling) {
+            const rookOldPosition = move.getRookOldPosition();
+            const rookNewPosition = move.getRookNewPosition();
+            const oldRookCell = cells.find(cell => cell.getXPosition() === rookOldPosition.getX() &&
+                cell.getYPosition() === rookOldPosition.getY());
+            const newRookCell = cells.find(cell => cell.getXPosition() === rookNewPosition.getX() &&
+                cell.getYPosition() === rookNewPosition.getY());
+            if (!oldRookCell || !newRookCell)
+                throw new Error("Invalid move: One or both rook positions do not exist on the chessboard.");
+            const rookChessPieceC = oldRookCell.getChessPiece();
+            if (!rookChessPieceC)
+                throw new Error("Invalid move: No rook found at the old position.");
+            oldRookCell.unsetChessPiece();
+            newRookCell.setChessPiece(rookChessPieceC);
         }
     }
 }

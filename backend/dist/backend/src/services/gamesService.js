@@ -86,8 +86,18 @@ export default class GamesService {
         }
         else if (moveType === MoveType.EnPassant) {
             const enPassantMove = this.chessService.isEnPassantMove(oldPosition, newPosition, chessboard);
+            if (!enPassantMove)
+                throw new Error("Operation failed: Unable to retrieve en passant move.");
             const enPassantPosition = { x: enPassantMove.getEnPassantPosition().getX(), y: enPassantMove.getEnPassantPosition().getY() };
             moveData = { oldPosition: move.oldPosition, newPosition: move.newPosition, enPassantPosition: enPassantPosition };
+        }
+        else if (moveType === MoveType.Castling) {
+            const castlingMove = this.chessService.isCastlingMove(oldPosition, newPosition, chessboard);
+            if (!castlingMove)
+                throw new Error("Operation failed: Unable to retrieve castling move.");
+            const rookOldPosition = { x: castlingMove.getRookOldPosition().getX(), y: castlingMove.getRookOldPosition().getY() };
+            const rookNewPosition = { x: castlingMove.getRookNewPosition().getX(), y: castlingMove.getRookNewPosition().getY() };
+            moveData = { oldPosition: move.oldPosition, newPosition: move.newPosition, rookOldPosition: rookOldPosition, rookNewPosition: rookNewPosition };
         }
         const scoreIncrease = this.chessService.makeMove(moveType, reconstructedMove, chessboard);
         game.increaseScore(scoreIncrease);
@@ -129,6 +139,9 @@ export default class GamesService {
         const isEnPassantMove = this.chessService.isEnPassantMove(oldPosition, newPosition, chessboard);
         if (isEnPassantMove)
             return MoveType.EnPassant;
+        const isCastlingMove = this.chessService.isCastlingMove(oldPosition, newPosition, chessboard);
+        if (isCastlingMove)
+            return MoveType.Castling;
         return MoveType.Move;
     }
 }

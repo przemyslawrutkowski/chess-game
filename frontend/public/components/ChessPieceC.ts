@@ -88,7 +88,11 @@ export default class ChessPieceC extends HTMLElement {
     }
 
     connectedCallback() {
-        this.addEventListener('dragstart', this.handleDragStart);
+        this.addEventListener('dragstart', this.handleDragStart.bind(this));
+    }
+
+    disconnectedCallback() {
+        this.removeEventListener('dragstart', this.handleDragStart.bind(this));
     }
 
     private handleDragStart(event: DragEvent) {

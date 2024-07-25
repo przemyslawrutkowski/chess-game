@@ -177,53 +177,68 @@ export default class InfoPanelC extends HTMLElement {
     }
 
     connectedCallback() {
+        this.disconnectButton.addEventListener('click', this.handleDisconnectClick.bind(this));
+        this.nextOpponentButton.addEventListener('click', this.handleNextOpponentClick.bind(this));
+    }
+
+    disconnectedCallback() {
+        this.disconnectButton.removeEventListener('click', this.handleDisconnectClick.bind(this));
+        this.nextOpponentButton.removeEventListener('click', this.handleNextOpponentClick.bind(this));
+    }
+
+    private handleDisconnectClick(event: Event) {
+        event.preventDefault();
+        this.socket.off(Events.SELF_DISCONNECTED);
+        this.socket.on(Events.SELF_DISCONNECTED, this.handleDisconnect.bind(this));
+        this.socket.emit(Events.SELF_DISCONNECT);
+    }
+
+    private handleDisconnect() {
+        this.socket.off(Events.SELF_DISCONNECTED);
+        this.socket.off(Events.MATCH_FOUND);
+        this.socket.off(Events.GAME_STATE_UPDATE);
+        this.socket.off(Events.OPPONENT_DISCONNECTED);
+        navigationModule.loadPage('/', false);
+    }
+
+    private handleNextOpponentClick(event: Event) {
+        event.preventDefault();
         let nextOpponentButtonStatus: 'Next Opponent' | 'Searching...' = 'Next Opponent';
 
-        const handleDisconnect = () => {
-            navigationModule.loadPage('/', false);
+        if (nextOpponentButtonStatus === 'Next Opponent') {
             this.socket.off(Events.SELF_DISCONNECTED);
-        }
-
-        const handleDisconnectForNextOpponent = () => {
-            const username = sessionStorage.getItem('username');
-            if (!username) throw new Error('Username not found in session storage');
-            this.socket.emit(Events.MATCH, username);
-        };
-
-        this.socket.once(Events.MATCH_FOUND, () => {
-            navigationModule.loadPage('/game', true);
-            this.socket.off(Events.SELF_DISCONNECTED);
-        });
-
-        this.disconnectButton.addEventListener('click', (event) => {
-            event.preventDefault();
-            this.socket.off(Events.SELF_DISCONNECTED);
-            this.socket.on(Events.SELF_DISCONNECTED, handleDisconnect);
+            this.socket.off(Events.MATCH_FOUND);
+            this.socket.on(Events.SELF_DISCONNECTED, this.handleDisconnectForNextOpponent.bind(this));
             this.socket.emit(Events.SELF_DISCONNECT);
-        });
+            nextOpponentButtonStatus = 'Searching...';
 
-        this.nextOpponentButton.addEventListener('click', (event) => {
-            event.preventDefault();
+            this.spinner.show();
 
-            if (nextOpponentButtonStatus === 'Next Opponent') {
-                this.socket.off(Events.SELF_DISCONNECTED);
-                this.socket.on(Events.SELF_DISCONNECTED, handleDisconnectForNextOpponent);
-                this.socket.emit(Events.SELF_DISCONNECT);
-                nextOpponentButtonStatus = 'Searching...';
+            this.nextOpponentButton.setStatus(nextOpponentButtonStatus);
+        } else {
+            this.socket.emit(Events.REMOVE_FROM_POOL);
 
-                this.spinner.show();
+            nextOpponentButtonStatus = 'Next Opponent';
 
-                this.nextOpponentButton.setStatus(nextOpponentButtonStatus);
-            } else {
-                this.socket.emit(Events.REMOVE_FROM_POOL);
+            this.spinner.hide();
 
-                nextOpponentButtonStatus = 'Next Opponent';
+            this.nextOpponentButton.setStatus(nextOpponentButtonStatus);
+        }
+    }
 
-                this.spinner.hide();
+    private handleDisconnectForNextOpponent() {
+        const username = sessionStorage.getItem('username');
+        if (!username) throw new Error('Username not found in session storage');
+        this.socket.on(Events.MATCH_FOUND, this.handleMatchFound.bind(this));
+        this.socket.emit(Events.MATCH, username);
+    }
 
-                this.nextOpponentButton.setStatus(nextOpponentButtonStatus);
-            }
-        });
+    private handleMatchFound() {
+        this.socket.off(Events.SELF_DISCONNECTED);
+        this.socket.off(Events.MATCH_FOUND);
+        this.socket.off(Events.GAME_STATE_UPDATE);
+        this.socket.off(Events.OPPONENT_DISCONNECTED);
+        navigationModule.loadPage('/game', true);
     }
 
     public initialize(user1: ClientUser, user2: ClientUser) {

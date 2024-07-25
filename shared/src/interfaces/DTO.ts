@@ -48,6 +48,11 @@ export interface EnPassantDTO extends MoveDTO {
     enPassantPosition: PositionDTO;
 }
 
+export interface CastlingDTO extends MoveDTO {
+    rookOldPosition: PositionDTO;
+    rookNewPosition: PositionDTO;
+}
+
 export interface PositionDTO {
     x: number;
     y: number;

@@ -51,7 +51,12 @@ export default class PromotionSelector extends HTMLElement {
     }
     connectedCallback() {
         this.promotionSelector.querySelectorAll('.promotion-option').forEach(option => {
-            option.addEventListener('click', this.handleSelection);
+            option.addEventListener('click', this.handleSelection.bind(this));
+        });
+    }
+    disconnectedCallback() {
+        this.promotionSelector.querySelectorAll('.promotion-option').forEach(option => {
+            option.removeEventListener('click', this.handleSelection.bind(this));
         });
     }
     handleSelection(event) {

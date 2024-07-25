@@ -16,6 +16,7 @@ class NavigationModule {
             else if (pageToLoad.href === '/game') {
                 gameController();
             }
+            window.scrollX = 0;
         }
     }
     async fetchPage(path, href) {
@@ -33,12 +34,12 @@ class NavigationModule {
             this.fetchPage('/html/startSection.html', '/'),
             this.fetchPage('/html/gameSection.html', '/game')
         ]);
-        this.loadPage('/', false);
         window.addEventListener('popstate', () => {
             if (window.location.pathname !== '/') {
                 this.loadPage('/', false);
             }
         });
+        this.loadPage('/', false);
     }
 }
 ;
