@@ -302,13 +302,20 @@ export default class ChessService {
             new Position(x + 1, y - 1),
             new Position(x, y - 1),
             new Position(x - 1, y - 1),
+        ];
+
+        const possibleCastlingMoves: Position[] = [
             new Position(x, y + 2),
             new Position(x, y - 2)
         ];
 
-        return possibleMoves.filter(position => {
+        const filteredPossibleMoves = possibleMoves.filter(position => {
             return this.isPositionValid(position) && !this.isPositionOccupied(socketId, position, chessboard);
         });
+
+        const filteredCastlingMoves = possibleCastlingMoves.filter(castlingPosition => this.isCastlingMove(position, castlingPosition, chessboard) !== null);
+
+        return [...filteredPossibleMoves, ...filteredCastlingMoves];
     }
 
     private getQueenMoves(socketId: string, position: Position, chessboard: Chessboard): Position[] {
@@ -552,8 +559,14 @@ export default class ChessService {
         const direction = newY > oldY ? 1 : -1;
         const rookPosition = direction === 1 ? new Position(oldX, 7) : new Position(oldX, 0);
 
+        const positionsOccupiedByOpponent = this.getOccupiedPositions(chessPiece.getUser().getSocketId(), chessboard);
         for (let y = oldY + direction; y !== rookPosition.getY(); y += direction) {
             if (this.getChessPieceAtPosition(new Position(oldX, y), chessboard)) return null;
+
+            const clonedChessboard = this.cloneChessboard(chessboard);
+            const newKingPosition = new Position(oldX, y);
+            this.moveChessPiece(oldPosition, newKingPosition, clonedChessboard);
+            if (this.isKingInCheck(newKingPosition, positionsOccupiedByOpponent, clonedChessboard)) return null;
         }
 
         const rook = this.getChessPieceAtPosition(rookPosition, chessboard);
