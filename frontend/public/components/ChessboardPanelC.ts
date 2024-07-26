@@ -13,11 +13,12 @@ template.innerHTML = `
     <style>
         .chessboard-panel {
             display: grid;
-            grid-template-columns: repeat(8, minmax(0, 1fr));
-            grid-template-rows: repeat(8, minmax(0, 1fr));
+            grid-template-columns: repeat(8, minmax(0, 75px));
+            grid-template-rows: repeat(8, minmax(0, 75px));
             max-width: 600px;
             max-height: 600px;
             margin-bottom: 2rem;
+            aspect-ratio: 1 / 1;
         }
 
         chessboard-cell {

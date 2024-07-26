@@ -107,7 +107,7 @@ export default class GamesService {
         const gameState = this.chessService.checkGameState(socketId, chessboard);
         game.updateCurrentPlayerOrWinner(gameState);
         const currentOrWinningPlayer = game.getCurrentOrWinningPlayer();
-        if (gameState === GameState.Checkmate || gameState === GameState.Stalemate) {
+        if (gameState === GameState.Checkmate || gameState === GameState.Stalemate || gameState === GameState.Draw) {
             if (!this.removeGame(socketId))
                 throw new Error("Operation failed: Unable to remove the completed game.");
         }

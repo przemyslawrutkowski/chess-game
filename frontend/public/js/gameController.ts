@@ -18,7 +18,6 @@ export default function gameController() {
         socket.emit(Events.GET_GAME_STATE);
 
         socket.once(Events.GAME_STATE, (game: GameDTO) => {
-            console.log(`GAME_STATE ${Date.now()}`);
             const reconstructedGame = reconstructGame(game);
 
             const chessboard = reconstructedGame.getChessboard();
@@ -34,7 +33,6 @@ export default function gameController() {
         });
 
         socket.on(Events.GAME_STATE_UPDATE, (moveResult: MoveResultDTO) => {
-            console.log(`GAME_STATE_UPDATE ${Date.now()}`);
             const reconstructedMoveResult = reconstructMoveResult(moveResult);
 
             const move = reconstructedMoveResult.getMove();

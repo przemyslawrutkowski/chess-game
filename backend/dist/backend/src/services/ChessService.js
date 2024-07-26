@@ -199,6 +199,8 @@ export default class ChessService {
         return this.isKingInCheck(kingPosition, occupiedPositions, chessboard);
     }
     checkGameState(socketId, chessboard) {
+        if (this.onlyKingsLeft(socketId, chessboard))
+            return GameState.Draw;
         const opponentKingPosition = this.getKingPosition(socketId, chessboard);
         const positionsOccupiedByMe = this.getOccupiedPositions(socketId, chessboard, true);
         const isKingInCheck = this.isKingInCheck(opponentKingPosition, positionsOccupiedByMe, chessboard);
@@ -214,6 +216,17 @@ export default class ChessService {
         if (isKingInCheck)
             return GameState.Checkmate;
         return GameState.Stalemate;
+    }
+    onlyKingsLeft(socketId, chessboard) {
+        const positionsOccupiedByMe = this.getOccupiedPositions(socketId, chessboard, true);
+        const positionsOccupiedByOpponents = this.getOccupiedPositions(socketId, chessboard, false);
+        if (positionsOccupiedByMe.length > 1 || positionsOccupiedByOpponents.length > 1)
+            return false;
+        const myPosition = positionsOccupiedByMe[0];
+        const opponentPosition = positionsOccupiedByOpponents[0];
+        const myChessPiece = this.getChessPieceAtPosition(myPosition, chessboard);
+        const opponentChessPiece = this.getChessPieceAtPosition(opponentPosition, chessboard);
+        return myChessPiece?.getMovementStrategy() === MovementStrategy.KingMovement && opponentChessPiece?.getMovementStrategy() === MovementStrategy.KingMovement;
     }
     getKingPosition(socketId, chessboard, my = false) {
         for (const row of chessboard) {

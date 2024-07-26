@@ -11,7 +11,6 @@ export default function gameController() {
         const socket = SocketConnection.getInstance();
         socket.emit(Events.GET_GAME_STATE);
         socket.once(Events.GAME_STATE, (game) => {
-            console.log(`GAME_STATE ${Date.now()}`);
             const reconstructedGame = reconstructGame(game);
             const chessboard = reconstructedGame.getChessboard();
             const user1 = reconstructedGame.getUser1();
@@ -23,7 +22,6 @@ export default function gameController() {
             chessboardPanel.initialize(chessboard);
         });
         socket.on(Events.GAME_STATE_UPDATE, (moveResult) => {
-            console.log(`GAME_STATE_UPDATE ${Date.now()}`);
             const reconstructedMoveResult = reconstructMoveResult(moveResult);
             const move = reconstructedMoveResult.getMove();
             const score = reconstructedMoveResult.getScore();

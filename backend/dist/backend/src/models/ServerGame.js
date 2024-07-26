@@ -65,6 +65,7 @@ export default class ServerGame {
     updateCurrentPlayerOrWinner(gameState) {
         switch (gameState) {
             case GameState.Stalemate:
+            case GameState.Draw:
                 this.gameState = gameState;
                 this.currentOrWinningPlayer = null;
                 break;
