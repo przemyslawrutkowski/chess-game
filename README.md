@@ -33,7 +33,7 @@ Just Chess is an online chess game that allows you to play chess against opponen
 
 ## How To Run
 
-1. Clone the repository: `https://github.com/przemyslawrutkowski/chess-game.git`
+1. Clone the repository: `git clone https://github.com/przemyslawrutkowski/chess-game.git`
 2. Navigate into the project directory: `cd chess-game`
 3. Install required dependencies in each part of the project (backend, frontend, shared):
     1. `cd project_part`
