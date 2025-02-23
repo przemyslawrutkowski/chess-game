@@ -39,12 +39,6 @@ const pathMappingsShared = new Map<string, string>([
     ['/interfaces', path.join(rootPath, 'frontend/dist/shared/src/interfaces')]
 ]);
 
-const setCorsHeaders = (res: ServerResponse) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-};
-
 const serveFile = (pathname: string, res: ServerResponse) => {
     let filePath: string = '';
     let contentType: string = '';
@@ -90,13 +84,6 @@ const serveFile = (pathname: string, res: ServerResponse) => {
 }
 
 const httpServer = createServer((req, res) => {
-    if (req.method === 'OPTIONS') {
-        setCorsHeaders(res);
-        res.writeHead(204);
-        return res.end();
-    }
-
-    setCorsHeaders(res);
     const url = new URL(req.url || '', `http://${req.headers.host}`);
     const pathname = url.pathname;
     serveFile(pathname, res);
@@ -104,8 +91,8 @@ const httpServer = createServer((req, res) => {
 
 const io = new Server(httpServer, {
     cors: {
-        origin: "*",
-        methods: ["GET", "POST"],
+        origin: "https://chess-game-6md9.onrender.com",
+        methods: ["GET", "POST"]
     }
 });
 
@@ -174,5 +161,5 @@ io.on("connection", (socket) => {
 });
 
 httpServer.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+    console.log(`Server is running on port ${port}`);
 });
