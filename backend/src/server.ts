@@ -41,7 +41,7 @@ const pathMappingsShared = new Map<string, string>([
 
 const setCorsHeaders = (res: ServerResponse) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 };
 
@@ -90,6 +90,12 @@ const serveFile = (pathname: string, res: ServerResponse) => {
 }
 
 const httpServer = createServer((req, res) => {
+    if (req.method === 'OPTIONS') {
+        setCorsHeaders(res);
+        res.writeHead(204);
+        return res.end();
+    }
+
     setCorsHeaders(res);
     const url = new URL(req.url || '', `http://${req.headers.host}`);
     const pathname = url.pathname;
@@ -100,7 +106,6 @@ const io = new Server(httpServer, {
     cors: {
         origin: "*",
         methods: ["GET", "POST"],
-        credentials: true
     }
 });
 
